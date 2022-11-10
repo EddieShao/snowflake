@@ -55,13 +55,22 @@ class Graph<T> {
             availConns[3] = false;
         }
 
-        // find valid location to insert new node
+        // find valid location to insert new edge
         for (int i = 0; i < 6; i++) {
             if (availConns[i] && toX == fromX + xOffsets[i] && toY == fromY + yOffsets[i]) {
-                // create 2 way connection between this node and new node
-                Node<T> to = Node(toX, toY, value ?? defaultValue);
-                data[from]?[i] = to;
-                data.putIfAbsent(to, () => list6(null))[5 - i] = from;
+                // get existing "to" node or create a new one
+                Node<T> to;
+                try {
+                    to = data.keys.firstWhere((node) => node.x == toX && node.y == toY);
+                } on StateError {
+                    to = Node(toX, toY, value ?? defaultValue);
+                    data[to] = list6(null);
+                }
+
+                // insert edge
+                data[to]![5 - i] = from;
+                data[from]![i] = to;
+
                 return true;
             }
         }
@@ -83,9 +92,6 @@ class Node<T> {
     T value;
 
     Node(this.x, this.y, this.value);
-
-    @override
-    String toString() => "($x, $y, $value)";
 }
 
 List<K> list6<K>(K value) {
