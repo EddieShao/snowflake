@@ -28,10 +28,11 @@ class Graph<T> {
             return false;
         }
 
-        // lchild, cchild, rchild, lparent, cparent, rparent
+        // indices: lchild, cchild, rchild, lparent, cparent, rparent
         List<bool> availConns = _list6(true);
         List<int> xOffsets = [-1, 0, 1, -1, 0, 1];
         List<int> yOffsets = [1, 2, 1, -1, -2, -1];
+
         if (fromY == 3 * fromX) {
             // right border node
             availConns[2] = false;
@@ -41,6 +42,7 @@ class Graph<T> {
             // right outer node
             availConns[5] = false;
         }
+
         if (fromY == -3 * fromX) {
             // left border node
             availConns[0] = false;

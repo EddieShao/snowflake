@@ -33,7 +33,7 @@ class Snowflake {
         List<Coordinate> armNodes = []; // nodes for 1 arm of the snowflake
         List<Pair<Coordinate, Coordinate>> armEdges = []; // edges for 1 arm of the snowflake
 
-        // render graphics for 1 arm of the snowflake
+        // create blueprint for 1 arm of the snowflake
         _graph.get().forEach((node, connections) {
             // render this node
             Coordinate from = toScreen(node.x, node.y);
@@ -56,37 +56,29 @@ class Snowflake {
             }
         });
 
-        List<Coordinate> nodes = List.from(armNodes); // nodes for all arms of the snowflake
-        List<Pair<Coordinate, Coordinate>> edges = List.from(armEdges); // edges for all arms of the snowflake
+        List<Coordinate> nodes = []; // nodes for full snowflake
+        List<Pair<Coordinate, Coordinate>> edges = []; // edges for full snowflake
 
-        // perform 60 * n degree rotations on the entire arm to complete the snowflake
-        for (int i = 1; i < 6; i++) {
+        // use blueprint to render all 6 arms and complete the snowflake
+        for (int i = 0; i < 6; i++) {
             double angle = i * math.pi / 3;
 
-            Coordinate rotate(Coordinate point) {
-                return Coordinate(
-                    point.x * math.cos(angle) - point.y * math.sin(angle),
-                    point.x * math.sin(angle) + point.y * math.cos(angle)
-                );
-            }
-
             for (var node in armNodes) {
-                nodes.add(rotate(node));
+                nodes.add(node.rotate(angle).center(size));
             }
 
             for (var edge in armEdges) {
-                edges.add(Pair(rotate(edge.first), rotate(edge.second)));
+                edges.add(
+                    Pair(
+                        edge.first.rotate(angle).center(size),
+                        edge.second.rotate(angle).center(size)
+                    )
+                );
             }
         }
 
-        // radius of circle that fits perfectly in the canvas.
-        double radius = size.width / 2;
-
         // move snowflake to center of canvas before returning
-        return Render(
-            nodes.map((node) => Coordinate(node.x + radius, node.y + radius)).toList(),
-            edges.map((edge) => Pair(Coordinate(edge.first.x + radius, edge.first.y + radius), Coordinate(edge.second.x + radius, edge.second.y + radius))).toList()
-        );
+        return Render(nodes, edges);
     }
 
     bool add(int fromX, int fromY, int toX, int toY) {
@@ -110,4 +102,23 @@ class Coordinate {
     final double y;
 
     const Coordinate(this.x, this.y);
+
+    /// Rotate [angle] radians counter-clockwise about the origin.
+    /// Done via matrix multiplication as follows (a == [angle]):
+    ///  _              _   _ _
+    /// | cos(a) -sin(a) | |[x]|
+    /// | sin(a)  cos(a) | |[y]|
+    ///  ‾              ‾   ‾ ‾
+    Coordinate rotate(double angle) {
+        return Coordinate(
+            x * math.cos(angle) - y * math.sin(angle),
+            x * math.sin(angle) + y * math.cos(angle)
+        );
+    }
+
+    /// Assuming this coordinate is relative to the origin (top-left corner), shift it s.t. the origin
+    /// is now at the center of the canvas with the given [size].
+    Coordinate center(Size size) {
+        return Coordinate(x + size.width / 2, y + size.height / 2);
+    }
 }

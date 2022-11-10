@@ -62,24 +62,31 @@ class _SnowflakePainter extends CustomPainter {
         sf.add(-1, 3, -1, 5);
         sf.add(-1, 5, 0, 6);
         sf.add(0, 6, 1, 5);
+        sf.add(0, 6, -1, 7);
+        sf.add(0, 6, 1, 7);
+        sf.add(0, 6, 0, 8);
+        sf.add(0, 6, 0, 4);
 
-        var render = sf.render(size);
-
-        for (var node in render.nodes) {
-            canvas.drawCircle(Offset(node.x, node.y), 4, nodePaint);
-        }
-
-        for (var edge in render.edges) {
-            canvas.drawLine(
-                Offset(edge.first.x, edge.first.y),
-                Offset(edge.second.x, edge.second.y),
-                edgePaint
-            );
-        }
+        canvas.drawSnowflake(sf.render(size), nodePaint, edgePaint);
     }
 
     @override
     bool shouldRepaint(covariant CustomPainter oldDelegate) {
         return false;
+    }
+}
+
+extension SnowflakeDrawer on Canvas {
+    void drawSnowflake(Render render, Paint nodePaint, Paint edgePaint) {
+        for (var node in render.nodes) {
+            drawCircle(Offset(node.x, node.y), 4, nodePaint);
+        }
+        for (var edge in render.edges) {
+            drawLine(
+                Offset(edge.first.x, edge.first.y),
+                Offset(edge.second.x, edge.second.y),
+                edgePaint
+            );
+        }
     }
 }
