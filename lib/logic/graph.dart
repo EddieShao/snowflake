@@ -1,35 +1,37 @@
 import 'dart:math';
 
 class Graph<T> {
-    final T _; // Default value of a node.
-    Map<Node<T>, List<Node<T>?>> _data = {};
+    final T defaultValue; // Default value of a node.
+    Map<Node<T>, List<Node<T>?>> data = {};
 
-    Graph(this._) {
-        _data[Node(0, 0, _)] = _list6(null);
+    Graph(this.defaultValue) {
+        data[Node(0, 0, defaultValue)] = list6(null);
     }
 
     Map<Node<T>, List<Node<T>?>> get() {
-        return Map<Node<T>, List<Node<T>?>>.from(_data);
+        return Map<Node<T>, List<Node<T>?>>.from(data);
     }
 
     int depth() {
-        return _data.keys.map((node) => node.y).reduce(max);
+        return data.keys.map((node) => node.y).reduce(max);
     }
 
     bool add(int fromX, int fromY, int toX, int toY, T? value) {
-        Node<T> from = Node(fromX, fromY, _);
-        List<Node<T>?>? connsFrom = _data[from];
-        if (connsFrom == null) {
+        // from node must exist
+        Node<T> from;
+        try {
+            from = data.keys.firstWhere((node) => node.x == fromX && node.y == fromY);
+        } on StateError {
             return false;
         }
 
-        Node<T> to = Node(toX, toY, value ?? _);
-        if (connsFrom.contains(to)) {
+        // to node must not exist in from node's connections
+        if (data[from]?.any((node) => node != null && node.x == toX && node.y == toY) == true) {
             return false;
         }
 
         // indices: lchild, cchild, rchild, lparent, cparent, rparent
-        List<bool> availConns = _list6(true);
+        List<bool> availConns = list6(true);
         List<int> xOffsets = [-1, 0, 1, -1, 0, 1];
         List<int> yOffsets = [1, 2, 1, -1, -2, -1];
 
@@ -53,20 +55,24 @@ class Graph<T> {
             availConns[3] = false;
         }
 
+        // find valid location to insert new node
         for (int i = 0; i < 6; i++) {
             if (availConns[i] && toX == fromX + xOffsets[i] && toY == fromY + yOffsets[i]) {
-                connsFrom[i] = to;
-                _data.putIfAbsent(to, () => _list6(null))[5 - i] = from;
+                // create 2 way connection between this node and new node
+                Node<T> to = Node(toX, toY, value ?? defaultValue);
+                data[from]?[i] = to;
+                data.putIfAbsent(to, () => list6(null))[5 - i] = from;
                 return true;
             }
         }
 
+        // no valid location was found for new node
         return false;
     }
 
     void clear() {
-        _data = {
-            Node(0, 0, _): _list6(null)
+        data = {
+            Node(0, 0, defaultValue): list6(null)
         };
     }
 }
@@ -79,18 +85,9 @@ class Node<T> {
     Node(this.x, this.y, this.value);
 
     @override
-    bool operator ==(Object other) =>
-        other is Node && other.runtimeType == runtimeType && other.x == x && other.y == y;
-        
-    @override
-    int get hashCode => Object.hash(x, y);
-
-    @override
-    String toString() {
-        return "($x, $y, $value)";
-    }
+    String toString() => "($x, $y, $value)";
 }
 
-List<K> _list6<K>(K value) {
+List<K> list6<K>(K value) {
     return [value, value, value, value, value, value];
 }

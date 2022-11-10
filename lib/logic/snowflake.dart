@@ -4,14 +4,7 @@ import 'dart:math' as math;
 import 'package:snowflake/utils.dart' show Pair;
 
 class Snowflake {
-    static final Snowflake _snowflake = Snowflake._internal();
     final Graph<int> _graph = Graph(0);
-
-    factory Snowflake() {
-        return _snowflake;
-    }
-
-    Snowflake._internal();
 
     Render render(Size size) {
         int depth = _graph.depth();

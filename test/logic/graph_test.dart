@@ -22,6 +22,7 @@ void main() {
             });
             test("Should add center child node to root.", () {
                 expect(graph.add(0, 0, 0, 2, null), true);
+                print(graph.data);
             });
             test("Should not add same edge in the opposite direction.", () {
                 expect(graph.add(0, 2, 0, 0, null), false);

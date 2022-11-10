@@ -29,7 +29,7 @@ class SnowflakeWidgetState extends State<SnowflakeWidget> with SingleTickerProvi
                 },
                 child: Center(
                     child: CustomPaint(
-                        painter: const _SnowflakePainter(),
+                        painter: _SnowflakePainter(),
                         size: Size.square(size.width - 40)
                     ),
                 ),
@@ -39,7 +39,9 @@ class SnowflakeWidgetState extends State<SnowflakeWidget> with SingleTickerProvi
 }
 
 class _SnowflakePainter extends CustomPainter {
-    const _SnowflakePainter();
+    Snowflake snowflake = Snowflake();
+
+    _SnowflakePainter();
 
     @override
     void paint(Canvas canvas, Size size) {
