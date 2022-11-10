@@ -20,13 +20,13 @@ class Graph<T> {
         // from node must exist
         Node<T> from;
         try {
-            from = data.keys.firstWhere((node) => node.x == fromX && node.y == fromY);
+            from = data.keys.firstWhere((node) => node.locEq(fromX, fromY));
         } on StateError {
             return false;
         }
 
         // to node must not exist in from node's connections
-        if (data[from]?.any((node) => node != null && node.x == toX && node.y == toY) == true) {
+        if (data[from]?.any((node) => node != null && node.locEq(toX, toY)) == true) {
             return false;
         }
 
@@ -61,7 +61,7 @@ class Graph<T> {
                 // get existing "to" node or create a new one
                 Node<T> to;
                 try {
-                    to = data.keys.firstWhere((node) => node.x == toX && node.y == toY);
+                    to = data.keys.firstWhere((node) => node.locEq(toX, toY));
                 } on StateError {
                     to = Node(toX, toY, value ?? defaultValue);
                     data[to] = list6(null);
@@ -79,6 +79,17 @@ class Graph<T> {
         return false;
     }
 
+    T? update(int x, int y, T newValue) {
+        try {
+            var target = data.keys.firstWhere((node) => node.locEq(x, y));
+            var oldValue = target.value;
+            target.value = newValue;
+            return oldValue;
+        } on StateError {
+            return null;
+        }
+    }
+
     void clear() {
         data = {
             Node(0, 0, defaultValue): list6(null)
@@ -92,6 +103,8 @@ class Node<T> {
     T value;
 
     Node(this.x, this.y, this.value);
+
+    bool locEq(int x, int y) => this.x == x && this.y == y;
 }
 
 List<K> list6<K>(K value) {

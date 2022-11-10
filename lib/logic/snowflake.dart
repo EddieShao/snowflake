@@ -74,8 +74,8 @@ class Snowflake {
         return Render(nodes, edges);
     }
 
-    bool add(int fromX, int fromY, int toX, int toY) {
-        return _graph.add(fromX, fromY, toX, toY, null);
+    bool add(int fromX, int fromY, int toX, int toY, {int? value}) {
+        return _graph.add(fromX, fromY, toX, toY, value);
     }
 
     void clear() {

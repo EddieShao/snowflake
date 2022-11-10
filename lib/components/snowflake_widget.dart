@@ -19,21 +19,25 @@ class SnowflakeWidgetState extends State<SnowflakeWidget> with SingleTickerProvi
         return SizedBox(
             width: size.width,
             height: size.height,
-            child: AnimatedBuilder(
-                animation: spin,
-                builder: (context, child) {
-                    return Transform.rotate(
-                        angle: -2 * math.pi * spin.value,
-                        child: child,
-                    );
-                },
-                child: Center(
-                    child: CustomPaint(
-                        painter: _SnowflakePainter(),
-                        size: Size.square(size.width - 40)
+            child: InteractiveViewer(
+                maxScale: 2,
+                minScale: 1,
+                child: AnimatedBuilder(
+                    animation: spin,
+                    builder: (context, child) {
+                        return Transform.rotate(
+                            angle: -2 * math.pi * spin.value,
+                            child: child,
+                        );
+                    },
+                    child: Center(
+                        child: CustomPaint(
+                            painter: _SnowflakePainter(),
+                            size: Size.square(size.width - 40)
+                        ),
                     ),
                 ),
-            )
+            ),
         );
     }
 }
@@ -45,16 +49,6 @@ class _SnowflakePainter extends CustomPainter {
 
     @override
     void paint(Canvas canvas, Size size) {
-        Paint nodePaint = Paint()
-            ..color = theme.white
-            ..strokeWidth = 0
-            ..style = PaintingStyle.fill;
-
-        Paint edgePaint = Paint()
-            ..color = theme.white
-            ..strokeWidth = 2
-            ..style = PaintingStyle.stroke;
-
         var sf = Snowflake();
         
         // TODO: remove when implemented user editing
@@ -68,8 +62,11 @@ class _SnowflakePainter extends CustomPainter {
         sf.add(0, 6, 1, 7);
         sf.add(0, 6, 0, 8);
         sf.add(0, 6, 0, 4);
+        // for (int i = 4; i < 60; i++) {
+        //     sf.add(0, i * 2, 0, (i + 1) * 2);
+        // }
 
-        canvas.drawSnowflake(sf.render(size), nodePaint, edgePaint);
+        canvas.drawSnowflake(sf.render(size));
     }
 
     @override
@@ -79,16 +76,27 @@ class _SnowflakePainter extends CustomPainter {
 }
 
 extension SnowflakeDrawer on Canvas {
-    void drawSnowflake(Render render, Paint nodePaint, Paint edgePaint) {
-        for (var node in render.nodes) {
-            drawCircle(Offset(node.x, node.y), 4, nodePaint);
-        }
+    void drawSnowflake(Render render) {
+        Paint nodePaint = Paint()
+            ..color = theme.white
+            ..strokeWidth = 0
+            ..style = PaintingStyle.fill;
+
+        Paint edgePaint = Paint()
+            ..color = theme.white
+            ..strokeWidth = 2
+            ..style = PaintingStyle.stroke;
+
         for (var edge in render.edges) {
             drawLine(
                 Offset(edge.first.x, edge.first.y),
                 Offset(edge.second.x, edge.second.y),
                 edgePaint
             );
+        }
+
+        for (var node in render.nodes) {
+            drawCircle(Offset(node.x, node.y), 6, nodePaint);
         }
     }
 }
