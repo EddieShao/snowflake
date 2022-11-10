@@ -14,45 +14,12 @@ class SnowflakeWidgetState extends State<SnowflakeWidget> with SingleTickerProvi
     late final AnimationController spin = AnimationController(vsync: this, duration: const Duration(seconds: 60))..repeat();
 
     @override
-    Widget build(BuildContext context) {
-        final Size size = MediaQuery.of(context).size;
-        return SizedBox(
-            width: size.width,
-            height: size.height,
-            child: InteractiveViewer(
-                maxScale: 2,
-                minScale: 1,
-                child: AnimatedBuilder(
-                    animation: spin,
-                    builder: (context, child) {
-                        return Transform.rotate(
-                            angle: -2 * math.pi * spin.value,
-                            child: child,
-                        );
-                    },
-                    child: Center(
-                        child: CustomPaint(
-                            painter: _SnowflakePainter(),
-                            size: Size.square(size.width - 40)
-                        ),
-                    ),
-                ),
-            ),
-        );
-    }
-}
-
-class _SnowflakePainter extends CustomPainter {
-    Snowflake snowflake = Snowflake();
-
-    _SnowflakePainter();
-
-    @override
-    void paint(Canvas canvas, Size size) {
+    void initState() {
+        super.initState();
         var sf = Snowflake();
-        
-        // TODO: remove when implemented user editing
-        //  Hard code a snowflake to draw
+
+        // TODO: replace hard-coded stuff with DB access
+        sf.clear();
         sf.add(0, 0, 0, 2);
         sf.add(0, 2, -1, 3);
         sf.add(-1, 3, -1, 5);
@@ -65,8 +32,38 @@ class _SnowflakePainter extends CustomPainter {
         // for (int i = 4; i < 60; i++) {
         //     sf.add(0, i * 2, 0, (i + 1) * 2);
         // }
+    }
 
-        canvas.drawSnowflake(sf.render(size));
+    @override
+    Widget build(BuildContext context) {
+        return InteractiveViewer(
+            maxScale: 2,
+            minScale: 1,
+            child: AnimatedBuilder(
+                animation: spin,
+                builder: (context, child) {
+                    return Transform.rotate(
+                        angle: -2 * math.pi * spin.value,
+                        child: child,
+                    );
+                },
+                child: Center(
+                    child: CustomPaint(
+                        painter: _SnowflakePainter(),
+                        size: Size.square(MediaQuery.of(context).size.width - 40)
+                    ),
+                ),
+            ),
+        );
+    }
+}
+
+class _SnowflakePainter extends CustomPainter {
+    _SnowflakePainter();
+
+    @override
+    void paint(Canvas canvas, Size size) {
+        canvas.drawSnowflake(Snowflake().render(size));
     }
 
     @override

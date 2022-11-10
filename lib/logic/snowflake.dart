@@ -4,6 +4,14 @@ import 'dart:math' as math;
 import 'package:snowflake/utils.dart' show Pair;
 
 class Snowflake {
+    static final Snowflake _snowflake = Snowflake._internal();
+
+    factory Snowflake() {
+        return _snowflake;
+    }
+
+    Snowflake._internal();
+
     final Graph<int> _graph = Graph(0);
 
     Render render(Size size) {
@@ -74,8 +82,8 @@ class Snowflake {
         return Render(nodes, edges);
     }
 
-    bool add(int fromX, int fromY, int toX, int toY, {int? value}) {
-        return _graph.add(fromX, fromY, toX, toY, value);
+    bool add(int fromX, int fromY, int toX, int toY, {int? toValue}) {
+        return _graph.add(fromX, fromY, toX, toY, toValue);
     }
 
     void clear() {

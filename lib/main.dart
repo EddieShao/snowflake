@@ -39,18 +39,21 @@ class MainPage extends StatelessWidget {
             width: size.width,
             height: size.height,
             decoration: theme.getBackground(),
-            child: Column(
+            child: Stack(
                 children: [
                     SizedBox(
                         width: size.width,
-                        height: size.height - appBarHeight,
+                        height: size.height,
                         child: const SnowflakeWidget(),
                     ),
-                    SizedBox(
-                        width: size.width,
-                        height: appBarHeight,
-                        child: const bottom_app_bar.BottomAppBar(),
-                    ),
+                    Positioned(
+                        bottom: 0,
+                        child: SizedBox(
+                            width: size.width,
+                            height: appBarHeight,
+                            child: const bottom_app_bar.BottomAppBar(),
+                        ),
+                    )
                 ],
             ),
         );
