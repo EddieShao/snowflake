@@ -159,8 +159,8 @@ void main() {
             test("Should update all instances of a node in the graph.", () {
                 graph.add(0, 0, 0, 2, null);
                 expect(graph.update(0, 0, 5), 10);
-                var root = graph.data.keys.firstWhere((node) => node.locEq(0, 0));
-                var child = graph.data.keys.firstWhere((node) => node.locEq(0, 2));
+                var root = graph.data.keys.firstWhere((node) => node.x == 0 && node.y == 0);
+                var child = graph.data.keys.firstWhere((node) => node.x == 0 && node.y == 2);
                 expect(root.value, 5);
                 expect(graph.data[child]![4]!.value, 5);
             });

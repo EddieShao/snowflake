@@ -8,9 +8,7 @@ class Graph<T> {
         data[Node(0, 0, defaultValue)] = list6(null);
     }
 
-    Map<Node<T>, List<Node<T>?>> get() {
-        return Map<Node<T>, List<Node<T>?>>.from(data);
-    }
+    Map<Node<T>, List<Node<T>?>> get() => Map.from(data);
 
     int depth() {
         return data.keys.map((node) => node.y).reduce(max);
@@ -18,15 +16,13 @@ class Graph<T> {
 
     bool add(int fromX, int fromY, int toX, int toY, T? value) {
         // from node must exist
-        Node<T> from;
-        try {
-            from = data.keys.firstWhere((node) => node.locEq(fromX, fromY));
-        } on StateError {
+        Node<T>? from = data.keys.find(fromX, fromY);
+        if (from == null) {
             return false;
         }
 
         // to node must not exist in from node's connections
-        if (data[from]?.any((node) => node != null && node.locEq(toX, toY)) == true) {
+        if (data[from]?.find(toX, toY) != null) {
             return false;
         }
 
@@ -59,10 +55,8 @@ class Graph<T> {
         for (int i = 0; i < 6; i++) {
             if (availConns[i] && toX == fromX + xOffsets[i] && toY == fromY + yOffsets[i]) {
                 // get existing "to" node or create a new one
-                Node<T> to;
-                try {
-                    to = data.keys.firstWhere((node) => node.locEq(toX, toY));
-                } on StateError {
+                Node<T>? to = data.keys.find(toX, toY);
+                if (to == null) {
                     to = Node(toX, toY, value ?? defaultValue);
                     data[to] = list6(null);
                 }
@@ -80,13 +74,13 @@ class Graph<T> {
     }
 
     T? update(int x, int y, T newValue) {
-        try {
-            var target = data.keys.firstWhere((node) => node.locEq(x, y));
-            var oldValue = target.value;
-            target.value = newValue;
-            return oldValue;
-        } on StateError {
+        var target = data.keys.find(x, y);
+        if (target == null) {
             return null;
+        } else {
+            var old = target.value;
+            target.value = newValue;
+            return old;
         }
     }
 
@@ -103,10 +97,18 @@ class Node<T> {
     T value;
 
     Node(this.x, this.y, this.value);
-
-    bool locEq(int x, int y) => this.x == x && this.y == y;
 }
 
 List<K> list6<K>(K value) {
     return [value, value, value, value, value, value];
+}
+
+extension NodeSearch<T> on Iterable<Node<T>?> {
+    Node<T>? find(int x, int y) {
+        try {
+            return firstWhere((node) => node != null && node.x == x && node.y == y);
+        } on StateError {
+            return null;
+        }
+    }
 }

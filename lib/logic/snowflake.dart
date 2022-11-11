@@ -36,9 +36,11 @@ class Snowflake {
 
         // create blueprint for 1 arm of the snowflake
         _graph.get().forEach((node, connections) {
-            // render this node
+            // render this node; don't render the root
             Coordinate from = toScreen(node.x, node.y);
-            armNodes.add(from);
+            if (node.x != 0 || node.y != 0) {
+                armNodes.add(from);
+            }
 
             // children
             var lchild = connections[0];
@@ -84,6 +86,10 @@ class Snowflake {
 
     bool add(int fromX, int fromY, int toX, int toY, {int? toValue}) {
         return _graph.add(fromX, fromY, toX, toY, toValue);
+    }
+
+    int? update(int x, int y, int newValue) {
+        return _graph.update(x, y, newValue);
     }
 
     void clear() {

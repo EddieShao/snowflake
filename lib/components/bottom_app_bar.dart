@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:snowflake/logic/snowflake.dart';
 import 'package:snowflake/theme.dart' as theme;
 
 class BottomAppBar extends StatelessWidget {
@@ -6,9 +7,14 @@ class BottomAppBar extends StatelessWidget {
 
     @override
     Widget build(BuildContext context) {
-        return DecoratedBox(
-            decoration: BoxDecoration(color: theme.white.withOpacity(0.1)),
-            child: const Center(child: Text("Navigation Bar"),),
+        return Center(
+            child: IconButton(
+                icon: const Icon(Icons.add),
+                tooltip: "Add center arm",
+                onPressed: () {
+                    Snowflake().add(0, 2, -1, 3);
+                },
+            ),
         );
     }
 }
