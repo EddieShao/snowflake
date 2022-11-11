@@ -1,33 +1,33 @@
 import 'dart:collection';
 import 'dart:math';
-
-typedef Edges<T> = List<Node<T>?>;
+import 'package:snowflake/utils.dart';
 
 class Graph<T> {
-    final HashMap<Node<T>, Edges<T>> nodes = HashMap();
+    final HashMap<Node<T>, List<Edge?>> _nodes = HashMap();
     final T _rootValue;
 
     Graph(this._rootValue) {
-        nodes[Node(0, 0, _rootValue)] = Edges.filled(6, null);
+        clear();
     }
 
-    HashMap<Node<T>, Edges<T>> state() => HashMap.of(nodes);
+    HashMap<Node<T>, List<Edge?>> state() => HashMap.of(_nodes);
 
-    int depth() => nodes.keys.map((node) => node.y).reduce(max);
+    int depth() => _nodes.keys.map((node) => node.point.y).reduce(max);
 
     bool add(int fromX, int fromY, int toX, int toY, T value) {
+        final from = _nodes.entries.find((e) => e.key.point.x == fromX && e.key.point.y == fromY);
+
         // "from" node must exist
-        final from = nodes.keys.find((e) => e.x == fromX && e.y == fromY);
         if (from == null) {
             return false;
         }
 
-        // "to" node cannot be connected to "from" node
-        if (nodes[from]?.find((e) => e != null && e.x == toX && e.y == toY) != null) {
+        // "to" node cannot be already connected to "from" node
+        if (from.value.find((e) => e != null && e.to.x == toX && e.to.y == toY) != null) {
             return false;
         }
 
-        final availableEdges = availableEdgesFrom(fromX, fromY);
+        final availableEdges = _availableEdgesFrom(fromX, fromY);
         const xOffsets = [-1, 0, 1, -1, 0, 1];
         const yOffsets = [1, 2, 1, -1, -2, -1];
 
@@ -36,16 +36,22 @@ class Graph<T> {
             final isTarget = toX == fromX + xOffsets[i] && toY == fromY + yOffsets[i];
 
             if (available && isTarget) {
-                Node<T> createTo() {
-                    final Node<T> tmp = Node(toX, toY, value);
-                    nodes[tmp] = Edges.filled(6, null);
-                    return tmp;
+                MapEntry<Node<T>, List<Edge?>> createTo() {
+                    final entry = MapEntry(
+                        Node(Point(toX, toY), value),
+                        List<Edge?>.filled(6, null)
+                    );
+                    _nodes.addEntries([entry]);
+                    return entry;
                 }
 
-                final to = nodes.keys.find((e) => e.x == toX && e.y == toY) ?? createTo();
+                final to = _nodes.entries.find((e) => e.key.point.x == toX && e.key.point.y == toY) ?? createTo();
 
-                nodes[from]?[i] = to;
-                nodes[to]?[5 - i] = from;
+                final fromPt = Point(from.key.point.x, from.key.point.y);
+                final toPt = Point(to.key.point.x, to.key.point.y);
+
+                from.value[i] = Edge(fromPt, toPt);
+                to.value[5 - i] = Edge(toPt, fromPt);
 
                 return true;
             }
@@ -55,7 +61,7 @@ class Graph<T> {
     }
 
     bool update(int x, int y, T newValue) {
-        final target = nodes.keys.find((e) => e.x == x && e.y == y);
+        final target = _nodes.keys.find((e) => e.point.x == x && e.point.y == y);
         if (target == null) {
             return false;
         }
@@ -64,34 +70,44 @@ class Graph<T> {
         return true;
     }
 
-    bool remove(int fromX, int fromY, int toX, int toY) {
-        final from = nodes.keys.find((e) => e.x == fromX && e.y == fromY);
-        final to = nodes[from]?.find((e) => e != null && e.x == toX && e.y == toY);
-        final toConnections = nodes[to];
+    bool remove(int x1, int y1, int x2, int y2) {
+        final p1 = _nodes.entries.find((e) => e.key.point.x == x1 && e.key.point.y == y1);
+        final p2 = _nodes.entries.find((e) => e.key.point.x == x2 && e.key.point.y == y2);
 
-        if (from == null || to == null || toConnections == null) {
+        if (p1 == null || p2 == null || p1 == p2) {
             return false;
         }
 
-        final isLeaf = toConnections.find((e) => e != null && (e.x != fromX || e.y != fromY)) == null;
-        final toIndex = nodes[from]?.indexOf(to) ?? -1;
-        final fromIndex = nodes[to]?.indexOf(from) ?? -1;
+        final MapEntry<Node<T>, List<Edge?>> leaf;
+        final MapEntry<Node<T>, List<Edge?>> branch;
 
-        if (isLeaf && toIndex != -1 && fromIndex != -1) {
-            nodes[from]?[toIndex] = null;
-            nodes.remove(to);
-            return true;
+        if (p1.isLeafOf(p2) && p1.isNotRoot()) {
+            leaf = p1;
+            branch = p2;
+        } else if (p2.isLeafOf(p1) && p2.isNotRoot()) {
+            leaf = p2;
+            branch = p1;
+        } else {
+            return false;
         }
 
-        return false;
+        final leafIndex = branch.value.indexWhere((e) => e != null && e.to.x == leaf.key.point.x && e.to.y == leaf.key.point.y);
+        if (leafIndex == -1) {
+            return false;
+        }
+
+        branch.value[leafIndex] = null;
+        _nodes.remove(leaf.key);
+
+        return true;
     }
 
     void clear() {
-        nodes.clear();
-        nodes[Node(0, 0, _rootValue)] = Edges.filled(6, null);
+        _nodes.clear();
+        _nodes[Node(const Point(0, 0), _rootValue)] = List<Edge?>.filled(6, null);
     }
 
-    List<bool> availableEdgesFrom(int x, int y) {
+    List<bool> _availableEdgesFrom(int x, int y) {
         // indices: [lchild, mchild, rchild, lparent, mparent, rparent]
         final available = List<bool>.filled(6, true);
 
@@ -119,20 +135,30 @@ class Graph<T> {
     }
 }
 
-class Node<T> {
-    int x;
-    int y;
-    T value;
+class Point {
+    final int x;
+    final int y;
 
-    Node(this.x, this.y, this.value);
+    const Point(this.x, this.y);
 }
 
-extension IterableHelper<E> on Iterable<E> {
-    E? find(bool Function(E e) condition) {
-        try {
-            return firstWhere((e) => condition(e));
-        } on StateError {
-            return null;
-        }
-    }
+class Node<T> {
+    final Point point;
+    T value;
+
+    Node(this.point, this.value);
+}
+
+class Edge {
+    final Point from;
+    final Point to;
+
+    const Edge(this.from, this.to);
+}
+
+extension<T> on MapEntry<Node<T>, List<Edge?>> {
+    bool isLeafOf(MapEntry<Node<T>, List<Edge?>> other) =>
+        value.find((e) => e != null && (e.to.x != other.key.point.x || e.to.y != other.key.point.y)) == null;
+    
+    bool isNotRoot() => key.point.x != 0 || key.point.y != 0;
 }

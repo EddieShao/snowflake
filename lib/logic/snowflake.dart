@@ -1,7 +1,7 @@
 import 'package:snowflake/logic/graph.dart';
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
-import 'package:snowflake/utils.dart' show Pair;
+import 'package:snowflake/utils.dart';
 
 class Snowflake {
     static final Snowflake _snowflake = Snowflake._internal();
@@ -37,8 +37,8 @@ class Snowflake {
         // create blueprint for 1 arm of the snowflake
         _graph.state().forEach((node, connections) {
             // render this node; don't render the root
-            Coordinate from = toScreen(node.x, node.y);
-            if (node.x != 0 || node.y != 0) {
+            Coordinate from = toScreen(node.point.x, node.point.y);
+            if (node.point.x != 0 || node.point.y != 0) {
                 armNodes.add(from);
             }
 
@@ -49,13 +49,13 @@ class Snowflake {
 
             // render edge to each non-null child
             if (lchild != null) {
-                armEdges.add(Pair(from, toScreen(lchild.x, lchild.y)));
+                armEdges.add(Pair(from, toScreen(lchild.to.x, lchild.to.y)));
             }
             if (cchild != null) {
-                armEdges.add(Pair(from, toScreen(cchild.x, cchild.y)));
+                armEdges.add(Pair(from, toScreen(cchild.to.x, cchild.to.y)));
             }
             if (rchild != null) {
-                armEdges.add(Pair(from, toScreen(rchild.x, rchild.y)));
+                armEdges.add(Pair(from, toScreen(rchild.to.x, rchild.to.y)));
             }
         });
 
