@@ -12,7 +12,7 @@ class BottomAppBar extends StatelessWidget {
                 icon: const Icon(Icons.add),
                 tooltip: "Add center arm",
                 onPressed: () {
-                    Snowflake().add(0, 2, -1, 3);
+                    Snowflake().add(0, 2, -1, 3, 0);
                 },
             ),
         );

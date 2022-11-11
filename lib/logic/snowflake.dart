@@ -84,17 +84,13 @@ class Snowflake {
         return Render(nodes, edges);
     }
 
-    bool add(int fromX, int fromY, int toX, int toY, {int? toValue}) {
-        return _graph.add(fromX, fromY, toX, toY, toValue);
-    }
+    bool add(int fromX, int fromY, int toX, int toY, int value) =>
+        _graph.add(fromX, fromY, toX, toY, value);
 
-    int? update(int x, int y, int newValue) {
-        return _graph.update(x, y, newValue);
-    }
+    bool update(int x, int y, int newValue) =>
+        _graph.update(x, y, newValue);
 
-    void clear() {
-        _graph.clear();
-    }
+    void clear() => _graph.clear();
 }
 
 class Render {

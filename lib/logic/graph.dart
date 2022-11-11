@@ -1,112 +1,106 @@
+import 'dart:collection';
 import 'dart:math';
 
+typedef Edges<T> = List<Node<T>?>;
+
 class Graph<T> {
-    final T defaultValue; // Default value of a node.
-    Map<Node<T>, List<Node<T>?>> data = {};
+    final HashMap<Node<T>, Edges<T>> nodes = HashMap();
 
-    Graph(this.defaultValue) {
-        data[Node(0, 0, defaultValue)] = list6(null);
+    Graph(T rootValue) {
+        nodes[Node(0, 0, rootValue)] = Edges.filled(6, null);
     }
 
-    Map<Node<T>, List<Node<T>?>> get() => Map.from(data);
+    HashMap<Node<T>, Edges<T>> get() => HashMap.of(nodes);
 
-    int depth() {
-        return data.keys.map((node) => node.y).reduce(max);
-    }
+    int depth() => nodes.keys.map((node) => node.y).reduce(max);
 
-    bool add(int fromX, int fromY, int toX, int toY, T? value) {
-        // from node must exist
-        Node<T>? from = data.keys.find(fromX, fromY);
+    bool add(int fromX, int fromY, int toX, int toY, T value) {
+        // "from" node must exist
+        final from = nodes.keys.find((e) => e.x == fromX && e.y == fromY);
         if (from == null) {
             return false;
         }
 
-        // to node must not exist in from node's connections
-        if (data[from]?.find(toX, toY) != null) {
+        // "to" node cannot be connected to "from" node
+        if (nodes[from]?.find((e) => e != null && e.x == toX && e.y == toY) != null) {
             return false;
         }
 
-        // indices: lchild, cchild, rchild, lparent, cparent, rparent
-        List<bool> availConns = list6(true);
-        List<int> xOffsets = [-1, 0, 1, -1, 0, 1];
-        List<int> yOffsets = [1, 2, 1, -1, -2, -1];
+        // indices: [lchild, mchild, rchild, lparent, mparent, rparent]
+        final availableEdges = List<bool>.filled(6, true);
+        const xOffsets = [-1, 0, 1, -1, 0, 1];
+        const yOffsets = [1, 2, 1, -1, -2, -1];
 
         if (fromY == 3 * fromX) {
             // right border node
-            availConns[2] = false;
-            availConns[4] = false;
-            availConns[5] = false;
+            availableEdges[2] = false;
+            availableEdges[4] = false;
+            availableEdges[5] = false;
         } else if (fromY == 3 * fromX + 2) {
             // right outer node
-            availConns[5] = false;
+            availableEdges[5] = false;
         }
 
         if (fromY == -3 * fromX) {
             // left border node
-            availConns[0] = false;
-            availConns[3] = false;
-            availConns[4] = false;
+            availableEdges[0] = false;
+            availableEdges[3] = false;
+            availableEdges[4] = false;
         } else if (fromY == -3 * fromX + 2) {
             // left outer node
-            availConns[3] = false;
+            availableEdges[3] = false;
         }
 
-        // find valid location to insert new edge
         for (int i = 0; i < 6; i++) {
-            if (availConns[i] && toX == fromX + xOffsets[i] && toY == fromY + yOffsets[i]) {
-                // get existing "to" node or create a new one
-                Node<T>? to = data.keys.find(toX, toY);
-                if (to == null) {
-                    to = Node(toX, toY, value ?? defaultValue);
-                    data[to] = list6(null);
+            final available = availableEdges[i];
+            final isTarget = toX == fromX + xOffsets[i] && toY == fromY + yOffsets[i];
+
+            if (available && isTarget) {
+                Node<T> createTo() {
+                    final Node<T> tmp = Node(toX, toY, value);
+                    nodes[tmp] = Edges.filled(6, null);
+                    return tmp;
                 }
 
-                // insert edge
-                data[to]![5 - i] = from;
-                data[from]![i] = to;
+                final to = nodes.keys.find((e) => e.x == toX && e.y == toY) ?? createTo();
+
+                nodes[from]?[i] = to;
+                nodes[to]?[5 - i] = from;
 
                 return true;
             }
         }
 
-        // no valid location was found for new node
         return false;
     }
 
-    T? update(int x, int y, T newValue) {
-        var target = data.keys.find(x, y);
+    bool update(int x, int y, T newValue) {
+        final target = nodes.keys.find((e) => e.x == x && e.y == y);
         if (target == null) {
-            return null;
-        } else {
-            var old = target.value;
-            target.value = newValue;
-            return old;
+            return false;
         }
+
+        target.value = newValue;
+        return true;
     }
 
     void clear() {
-        data = {
-            Node(0, 0, defaultValue): list6(null)
-        };
+        nodes.clear();
     }
 }
 
 class Node<T> {
-    final int x;
-    final int y;
+    int x;
+    int y;
     T value;
 
     Node(this.x, this.y, this.value);
 }
 
-List<K> list6<K>(K value) {
-    return [value, value, value, value, value, value];
-}
-
-extension NodeSearch<T> on Iterable<Node<T>?> {
-    Node<T>? find(int x, int y) {
+extension IterableHelper<E> on Iterable<E> {
+    E? find(bool Function(E e) condition) {
         try {
-            return firstWhere((node) => node != null && node.x == x && node.y == y);
+            return firstWhere((e) => condition(e));
         } on StateError {
             return null;
         }

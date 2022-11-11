@@ -20,17 +20,17 @@ class SnowflakeWidgetState extends State<SnowflakeWidget> with SingleTickerProvi
 
         // TODO: replace hard-coded stuff with DB access
         sf.clear();
-        sf.add(0, 0, 0, 2);
-        // sf.add(0, 2, -1, 3);
-        // sf.add(-1, 3, -1, 5);
-        // sf.add(-1, 5, 0, 6);
-        // sf.add(0, 6, 1, 5);
-        // sf.add(0, 6, -1, 7);
-        // sf.add(0, 6, 1, 7);
-        // sf.add(0, 6, 0, 8);
-        // sf.add(0, 6, 0, 4);
+        sf.add(0, 0, 0, 2, 0);
+        // sf.add(0, 2, -1, 3, 0);
+        // sf.add(-1, 3, -1, 5, 0);
+        // sf.add(-1, 5, 0, 6, 0);
+        // sf.add(0, 6, 1, 5, 0);
+        // sf.add(0, 6, -1, 7, 0);
+        // sf.add(0, 6, 1, 7, 0);
+        // sf.add(0, 6, 0, 8, 0);
+        // sf.add(0, 6, 0, 4, 0);
         // for (int i = 4; i < 60; i++) {
-        //     sf.add(0, i * 2, 0, (i + 1) * 2);
+        //     sf.add(0, i * 2, 0, (i + 1) * 2, 0);
         // }
     }
 
