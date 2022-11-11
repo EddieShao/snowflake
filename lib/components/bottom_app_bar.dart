@@ -7,14 +7,23 @@ class BottomAppBar extends StatelessWidget {
 
     @override
     Widget build(BuildContext context) {
-        return Center(
-            child: IconButton(
-                icon: const Icon(Icons.add),
-                tooltip: "Add center arm",
-                onPressed: () {
-                    Snowflake().add(0, 2, -1, 3, 0);
-                },
-            ),
+        return Row(
+            children: [
+                IconButton(
+                    icon: const Icon(Icons.add),
+                    tooltip: "Add an arm",
+                    onPressed: () {
+                        Snowflake().add(0, 6, 1, 5, 0);
+                    },
+                ),
+                IconButton(
+                    icon: const Icon(Icons.remove),
+                    tooltip: "Remove an arm",
+                    onPressed: () {
+                        Snowflake().remove(0, 6, 1, 5);
+                    },
+                ),
+            ],
         );
     }
 }

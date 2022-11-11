@@ -5,12 +5,13 @@ typedef Edges<T> = List<Node<T>?>;
 
 class Graph<T> {
     final HashMap<Node<T>, Edges<T>> nodes = HashMap();
+    final T _rootValue;
 
-    Graph(T rootValue) {
-        nodes[Node(0, 0, rootValue)] = Edges.filled(6, null);
+    Graph(this._rootValue) {
+        nodes[Node(0, 0, _rootValue)] = Edges.filled(6, null);
     }
 
-    HashMap<Node<T>, Edges<T>> get() => HashMap.of(nodes);
+    HashMap<Node<T>, Edges<T>> state() => HashMap.of(nodes);
 
     int depth() => nodes.keys.map((node) => node.y).reduce(max);
 
@@ -26,30 +27,9 @@ class Graph<T> {
             return false;
         }
 
-        // indices: [lchild, mchild, rchild, lparent, mparent, rparent]
-        final availableEdges = List<bool>.filled(6, true);
+        final availableEdges = availableEdgesFrom(fromX, fromY);
         const xOffsets = [-1, 0, 1, -1, 0, 1];
         const yOffsets = [1, 2, 1, -1, -2, -1];
-
-        if (fromY == 3 * fromX) {
-            // right border node
-            availableEdges[2] = false;
-            availableEdges[4] = false;
-            availableEdges[5] = false;
-        } else if (fromY == 3 * fromX + 2) {
-            // right outer node
-            availableEdges[5] = false;
-        }
-
-        if (fromY == -3 * fromX) {
-            // left border node
-            availableEdges[0] = false;
-            availableEdges[3] = false;
-            availableEdges[4] = false;
-        } else if (fromY == -3 * fromX + 2) {
-            // left outer node
-            availableEdges[3] = false;
-        }
 
         for (int i = 0; i < 6; i++) {
             final available = availableEdges[i];
@@ -84,8 +64,58 @@ class Graph<T> {
         return true;
     }
 
+    bool remove(int fromX, int fromY, int toX, int toY) {
+        final from = nodes.keys.find((e) => e.x == fromX && e.y == fromY);
+        final to = nodes[from]?.find((e) => e != null && e.x == toX && e.y == toY);
+        final toConnections = nodes[to];
+
+        if (from == null || to == null || toConnections == null) {
+            return false;
+        }
+
+        final isLeaf = toConnections.find((e) => e != null && (e.x != fromX || e.y != fromY)) == null;
+        final toIndex = nodes[from]?.indexOf(to) ?? -1;
+        final fromIndex = nodes[to]?.indexOf(from) ?? -1;
+
+        if (isLeaf && toIndex != -1 && fromIndex != -1) {
+            nodes[from]?[toIndex] = null;
+            nodes.remove(to);
+            return true;
+        }
+
+        return false;
+    }
+
     void clear() {
         nodes.clear();
+        nodes[Node(0, 0, _rootValue)] = Edges.filled(6, null);
+    }
+
+    List<bool> availableEdgesFrom(int x, int y) {
+        // indices: [lchild, mchild, rchild, lparent, mparent, rparent]
+        final available = List<bool>.filled(6, true);
+
+        if (y == 3 * x) {
+            // right border node
+            available[2] = false;
+            available[4] = false;
+            available[5] = false;
+        } else if (y == 3 * x + 2) {
+            // right outer node
+            available[5] = false;
+        }
+
+        if (y == -3 * x) {
+            // left border node
+            available[0] = false;
+            available[3] = false;
+            available[4] = false;
+        } else if (y == -3 * x + 2) {
+            // left outer node
+            available[3] = false;
+        }
+
+        return available;
     }
 }
 

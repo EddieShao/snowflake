@@ -35,7 +35,7 @@ class Snowflake {
         List<Pair<Coordinate, Coordinate>> armEdges = []; // edges for 1 arm of the snowflake
 
         // create blueprint for 1 arm of the snowflake
-        _graph.get().forEach((node, connections) {
+        _graph.state().forEach((node, connections) {
             // render this node; don't render the root
             Coordinate from = toScreen(node.x, node.y);
             if (node.x != 0 || node.y != 0) {
@@ -80,7 +80,6 @@ class Snowflake {
             }
         }
 
-        // move snowflake to center of canvas before returning
         return Render(nodes, edges);
     }
 
@@ -89,6 +88,9 @@ class Snowflake {
 
     bool update(int x, int y, int newValue) =>
         _graph.update(x, y, newValue);
+
+    bool remove(int fromX, int fromY, int toX, int toY) =>
+        _graph.remove(fromX, fromY, toX, toY);
 
     void clear() => _graph.clear();
 }
