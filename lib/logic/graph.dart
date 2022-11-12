@@ -12,6 +12,26 @@ class Graph<T> {
 
     HashMap<Node<T>, List<Point?>> state() => HashMap.of(_nodes);
 
+    Set<Pair<Point, Point>> next() {
+        final free = <Pair<Point, Point>>{};
+
+        const xOffsets = [-1, 0, 1, -1, 0, 1];
+        const yOffsets = [1, 2, 1, -1, -2, -1];
+
+        for (final entry in _nodes.entries) {
+            final from = entry.key.point;
+            final availability = _availableEdgesFrom(from);
+
+            for (int i = 0; i < 6; i++) {
+                if (availability[i] && entry.value[i] == null) {
+                    free.add(Pair(from, Point(from.x + xOffsets[i], from.y + yOffsets[i])));
+                }
+            }
+        }
+
+        return free;
+    }
+
     int depth() => _nodes.keys.map((node) => node.point.y).reduce(max);
 
     bool add(Pair<Point, Point> edge, T value) {

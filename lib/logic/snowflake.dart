@@ -23,11 +23,11 @@ class Snowflake {
         double offsetAngle = math.pi / 6;
 
         // convert graph coordinates to screen coordinates
-        Coordinate toScreen(int x, int y) {
-            double hypotenuse = (y - x) / 2 * edgeLength;
+        Coordinate toScreen(Point point) {
+            double hypotenuse = (point.y - point.x) / 2 * edgeLength;
             return Coordinate(
                 hypotenuse * math.cos(offsetAngle),
-                hypotenuse * math.sin(offsetAngle) + x * edgeLength
+                hypotenuse * math.sin(offsetAngle) + point.x * edgeLength
             );
         }
 
@@ -37,7 +37,7 @@ class Snowflake {
         // create blueprint for 1 arm of the snowflake
         _graph.state().forEach((node, connections) {
             // render this node; don't render the root
-            Coordinate from = toScreen(node.point.x, node.point.y);
+            Coordinate from = toScreen(node.point);
             if (node.point.x != 0 || node.point.y != 0) {
                 armNodes.add(from);
             }
@@ -49,13 +49,13 @@ class Snowflake {
 
             // render edge to each non-null child
             if (lchild != null) {
-                armEdges.add(Pair(from, toScreen(lchild.x, lchild.y)));
+                armEdges.add(Pair(from, toScreen(lchild)));
             }
             if (cchild != null) {
-                armEdges.add(Pair(from, toScreen(cchild.x, cchild.y)));
+                armEdges.add(Pair(from, toScreen(cchild)));
             }
             if (rchild != null) {
-                armEdges.add(Pair(from, toScreen(rchild.x, rchild.y)));
+                armEdges.add(Pair(from, toScreen(rchild)));
             }
         });
 
@@ -109,7 +109,7 @@ class Coordinate {
     const Coordinate(this.x, this.y);
 
     /// Rotate [angle] radians counter-clockwise about the origin.
-    /// Done via matrix multiplication as follows (a == [angle]):
+    /// Done via multiplying the coordinate by the rotation matrix as follows (a == [angle]):
     ///  _              _   _ _
     /// | cos(a) -sin(a) | |[x]|
     /// | sin(a)  cos(a) | |[y]|

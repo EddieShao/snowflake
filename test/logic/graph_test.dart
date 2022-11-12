@@ -8,6 +8,42 @@ void main() {
         setUp(() {
             graph.clear();
         });
+        group("next()", () {
+            test("Should only have (0, 2) as next for root node.", () {
+                expect(graph.next(), {const Pair(Point(0, 0), Point(0, 2))});
+            });
+            test("Should have 3 children available for outer node", () {
+                graph.add(const Pair(Point(0, 0), Point(0, 2)), 4);
+                expect(graph.next(), {
+                    const Pair(Point(0, 2), Point(-1, 3)),
+                    const Pair(Point(0, 2), Point(0, 4)),
+                    const Pair(Point(0, 2), Point(1, 3))
+                });
+            });
+            test("Should leave out edges that already exist from a node.", () {
+                graph.add(const Pair(Point(0, 0), Point(0, 2)), 4);
+                graph.add(const Pair(Point(0, 2), Point(-1, 3)), 1);
+                expect(graph.next(), {
+                    const Pair(Point(0, 2), Point(0, 4)),
+                    const Pair(Point(0, 2), Point(1, 3)),
+                    const Pair(Point(-1, 3), Point(-1, 5)),
+                    const Pair(Point(-1, 3), Point(0, 4))
+                });
+            });
+            test("complicated graph.", () {
+                graph.add(const Pair(Point(0, 0), Point(0, 2)), 1);
+                graph.add(const Pair(Point(0, 2), Point(0, 4)), 2);
+                expect(graph.next(), {
+                    const Pair(Point(0, 2), Point(-1, 3)),
+                    const Pair(Point(0, 2), Point(1, 3)),
+                    const Pair(Point(-1, 3), Point(0, 4)),
+                    const Pair(Point(0, 4), Point(1, 3)),
+                    const Pair(Point(0, 4), Point(-1, 5)),
+                    const Pair(Point(0, 4), Point(1, 5)),
+                    const Pair(Point(0, 4), Point(0, 6)),
+                });
+            });
+        });
         group("depth()", () {
             test("Empty tree should have depth of 0.", () {
                 expect(graph.depth(), 0);
