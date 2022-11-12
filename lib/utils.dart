@@ -3,6 +3,13 @@ class Pair<A, B> {
     final B second;
 
     const Pair(this.first, this.second);
+
+    @override
+    operator ==(covariant Pair other) =>
+        (first == other.first && second == other.second) || (first == other.second && second == other.first);
+
+    @override
+    int get hashCode => Object.hash(first, second);
 }
 
 extension IterableHelper<E> on Iterable<E> {

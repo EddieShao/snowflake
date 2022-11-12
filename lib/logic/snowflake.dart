@@ -49,13 +49,13 @@ class Snowflake {
 
             // render edge to each non-null child
             if (lchild != null) {
-                armEdges.add(Pair(from, toScreen(lchild.to.x, lchild.to.y)));
+                armEdges.add(Pair(from, toScreen(lchild.x, lchild.y)));
             }
             if (cchild != null) {
-                armEdges.add(Pair(from, toScreen(cchild.to.x, cchild.to.y)));
+                armEdges.add(Pair(from, toScreen(cchild.x, cchild.y)));
             }
             if (rchild != null) {
-                armEdges.add(Pair(from, toScreen(rchild.to.x, rchild.to.y)));
+                armEdges.add(Pair(from, toScreen(rchild.x, rchild.y)));
             }
         });
 
@@ -83,14 +83,14 @@ class Snowflake {
         return Render(nodes, edges);
     }
 
-    bool add(int fromX, int fromY, int toX, int toY, int value) =>
-        _graph.add(fromX, fromY, toX, toY, value);
+    bool add(int x1, int y1, int x2, int y2, int value) =>
+        _graph.add(Pair(Point(x1, y1), Point(x2, y2)), value);
 
     bool update(int x, int y, int newValue) =>
-        _graph.update(x, y, newValue);
+        _graph.update(Point(x, y), newValue);
 
-    bool remove(int fromX, int fromY, int toX, int toY) =>
-        _graph.remove(fromX, fromY, toX, toY);
+    bool remove(int x1, int y1, int x2, int y2) =>
+        _graph.remove(Pair(Point(x1, y1), Point(x2, y2)));
 
     void clear() => _graph.clear();
 }
