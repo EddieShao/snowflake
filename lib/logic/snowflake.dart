@@ -12,11 +12,15 @@ class Snowflake {
 
     Snowflake._internal();
 
-    final Graph<int> _graph = Graph(0);
+    final Graph<int> _arm = Graph(0);
     bool showNext = false;
 
+    /// Return geometry data of the current snowflake. The render fits inside a canvas with the
+    /// given [size].
+    /// 
+    /// If [showNext] is true, the next available edges of the snowflake will be rendered as well.
     Render render(Size size) {
-        int depth = showNext ? _graph.depth() + 2 : _graph.depth();
+        int depth = showNext ? _arm.depth() + 2 : _arm.depth();
 
         // edge length s.t. we can fit [depth] of them in a line on the canvas.
         double edgeLength = size.width / (depth % 2 == 0 ? depth : depth + 1);
@@ -36,7 +40,7 @@ class Snowflake {
         List<Pair<Coordinate, Coordinate>> armEdges = []; // edges for 1 arm of the snowflake
 
         // create blueprint for 1 arm of the snowflake
-        _graph.state().forEach((node, connections) {
+        _arm.state().forEach((node, connections) {
             // render this node; don't render the root
             Coordinate from = toScreen(node.point);
             if (node.point.x != 0 || node.point.y != 0) {
@@ -83,7 +87,7 @@ class Snowflake {
 
         final List<Pair<Coordinate, Coordinate>> nextEdges = [];
         if (showNext) {
-            final armNextEdges = _graph.next().map((edge) => Pair(toScreen(edge.first), toScreen(edge.second)));
+            final armNextEdges = _arm.next().map((edge) => Pair(toScreen(edge.first), toScreen(edge.second)));
 
             for (int i = 0; i < 6; i++) {
                 double angle = i * math.pi / 3;
@@ -103,15 +107,15 @@ class Snowflake {
     }
 
     bool add(int x1, int y1, int x2, int y2, int value) =>
-        _graph.add(Pair(Point(x1, y1), Point(x2, y2)), value);
+        _arm.add(Pair(Point(x1, y1), Point(x2, y2)), value);
 
     bool update(int x, int y, int newValue) =>
-        _graph.update(Point(x, y), newValue);
+        _arm.update(Point(x, y), newValue);
 
     bool remove(int x1, int y1, int x2, int y2) =>
-        _graph.remove(Pair(Point(x1, y1), Point(x2, y2)));
+        _arm.remove(Pair(Point(x1, y1), Point(x2, y2)));
 
-    void clear() => _graph.clear();
+    void clear() => _arm.clear();
 }
 
 class Render {

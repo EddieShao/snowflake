@@ -2,6 +2,8 @@ import 'dart:collection';
 import 'dart:math';
 import 'package:snowflake/utils.dart';
 
+/// An undirected graph that follows [triangle tiling](https://en.wikipedia.org/wiki/Triangular_tiling)
+/// constrained to a 60 degree angle (1/6) slice.
 class Graph<T> {
     final HashMap<Node<T>, List<Point?>> _nodes = HashMap();
     final T _rootValue;
@@ -12,6 +14,7 @@ class Graph<T> {
 
     HashMap<Node<T>, List<Point?>> state() => HashMap.of(_nodes);
 
+    /// Return a set of all edges that can be immediately added to this graph.
     Set<Pair<Point, Point>> next() {
         final free = <Pair<Point, Point>>{};
 
@@ -34,6 +37,10 @@ class Graph<T> {
 
     int depth() => _nodes.keys.map((node) => node.point.y).reduce(max);
 
+    /// Add the given [edge] to this graph. If adding this [edge] also creates a new node, that node
+    /// is assigned the given [value].
+    /// 
+    /// Return whether the add was successful or not.
     bool add(Pair<Point, Point> edge, T value) {
         final MapEntry<Node<T>, List<Point?>> from;
         final MapEntry<Node<T>, List<Point?>> to;
@@ -69,6 +76,9 @@ class Graph<T> {
         return false;
     }
 
+    /// Update the node at [point] with the given [newValue].
+    /// 
+    /// Return whether the update was successful or not.
     bool update(Point point, T newValue) {
         final target = _nodes.keys.find((e) => e.point == point);
 
@@ -80,6 +90,9 @@ class Graph<T> {
         return true;
     }
 
+    /// Remove the given [edge] from this graph.
+    /// 
+    /// Return whether the remove was successful or not.
     bool remove(Pair<Point, Point> edge) {
         final p1 = _nodes.entries.find((e) => e.key.point == edge.first);
         final p2 = _nodes.entries.find((e) => e.key.point == edge.second);
