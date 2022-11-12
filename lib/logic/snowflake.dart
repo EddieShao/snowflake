@@ -15,6 +15,8 @@ class Snowflake {
     final Graph<int> _arm = Graph(0);
     bool showNext = false;
 
+    void Function(PointerEvent event)? onTap;
+
     /// Return geometry data of the current snowflake. The render fits inside a canvas with the
     /// given [size].
     /// 

@@ -36,7 +36,6 @@ class SnowflakeWidgetState extends State<SnowflakeWidget> with SingleTickerProvi
 
     @override
     void dispose() {
-        // TODO: implement dispose
         super.dispose();
     }
 
@@ -54,10 +53,13 @@ class SnowflakeWidgetState extends State<SnowflakeWidget> with SingleTickerProvi
                     );
                 },
                 child: Center(
-                    child: CustomPaint(
-                        painter: _SnowflakePainter(),
-                        size: Size.square(MediaQuery.of(context).size.width - 40)
-                    ),
+                    child: Listener(
+                        onPointerUp: ((event) => Snowflake().onTap?.call(event)),
+                        child: CustomPaint(
+                            painter: const _SnowflakePainter(),
+                            size: Size.square(MediaQuery.of(context).size.width - 40)
+                        ),
+                    )
                 ),
             ),
         );
@@ -65,11 +67,15 @@ class SnowflakeWidgetState extends State<SnowflakeWidget> with SingleTickerProvi
 }
 
 class _SnowflakePainter extends CustomPainter {
-    _SnowflakePainter();
+    const _SnowflakePainter();
 
     @override
     void paint(Canvas canvas, Size size) {
-        canvas.drawSnowflake(Snowflake().render(size));
+        final render = Snowflake().render(size);
+        canvas.drawSnowflake(render);
+        Snowflake().onTap = (event) {
+            // TODO: implement tapping stuff
+        };
     }
 
     @override
