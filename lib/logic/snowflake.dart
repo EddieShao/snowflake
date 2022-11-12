@@ -13,9 +13,10 @@ class Snowflake {
     Snowflake._internal();
 
     final Graph<int> _graph = Graph(0);
+    bool showNext = false;
 
     Render render(Size size) {
-        int depth = _graph.depth();
+        int depth = showNext ? _graph.depth() + 2 : _graph.depth();
 
         // edge length s.t. we can fit [depth] of them in a line on the canvas.
         double edgeLength = size.width / (depth % 2 == 0 ? depth : depth + 1);
@@ -80,7 +81,25 @@ class Snowflake {
             }
         }
 
-        return Render(nodes, edges);
+        final List<Pair<Coordinate, Coordinate>> nextEdges = [];
+        if (showNext) {
+            final armNextEdges = _graph.next().map((edge) => Pair(toScreen(edge.first), toScreen(edge.second)));
+
+            for (int i = 0; i < 6; i++) {
+                double angle = i * math.pi / 3;
+
+                for (final edge in armNextEdges) {
+                    nextEdges.add(
+                        Pair(
+                            edge.first.rotate(angle).center(size),
+                            edge.second.rotate(angle).center(size)
+                        )
+                    );
+                }
+            }
+        }
+
+        return Render(nodes, edges, nextEdges);
     }
 
     bool add(int x1, int y1, int x2, int y2, int value) =>
@@ -98,8 +117,9 @@ class Snowflake {
 class Render {
     final List<Coordinate> nodes;
     final List<Pair<Coordinate, Coordinate>> edges;
+    final List<Pair<Coordinate, Coordinate>> nextEdges;
 
-    const Render(this.nodes, this.edges);
+    const Render(this.nodes, this.edges, this.nextEdges);
 }
 
 class Coordinate {

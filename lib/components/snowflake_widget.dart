@@ -80,21 +80,34 @@ class _SnowflakePainter extends CustomPainter {
 
 extension SnowflakeDrawer on Canvas {
     void drawSnowflake(Render render) {
-        Paint nodePaint = Paint()
-            ..color = theme.white
-            ..strokeWidth = 0
-            ..style = PaintingStyle.fill;
-
         Paint edgePaint = Paint()
             ..color = theme.white
             ..strokeWidth = 2
             ..style = PaintingStyle.stroke;
+        
+        Paint nextEdgePaint = Paint()
+            ..color = theme.white.withOpacity(0.2)
+            ..strokeWidth = 2
+            ..style = PaintingStyle.stroke;
+        
+        Paint nodePaint = Paint()
+            ..color = theme.white
+            ..strokeWidth = 0
+            ..style = PaintingStyle.fill;
 
         for (var edge in render.edges) {
             drawLine(
                 Offset(edge.first.x, edge.first.y),
                 Offset(edge.second.x, edge.second.y),
                 edgePaint
+            );
+        }
+
+        for (final edge in render.nextEdges) {
+            drawLine(
+                Offset(edge.first.x, edge.first.y),
+                Offset(edge.second.x, edge.second.y),
+                nextEdgePaint
             );
         }
 

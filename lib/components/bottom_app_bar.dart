@@ -24,6 +24,13 @@ class BottomAppBar extends StatelessWidget {
                         sf.remove(0, 6, 1, 5);
                     },
                 ),
+                IconButton(
+                    icon: const Icon(Icons.edit),
+                    tooltip: "Show next available arms",
+                    onPressed: () {
+                        sf.showNext = !sf.showNext;
+                    },
+                ),
             ],
         );
     }
