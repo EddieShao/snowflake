@@ -4,9 +4,9 @@ import 'package:snowflake/theme.dart' as theme;
 import 'package:snowflake/logic/snowflake.dart';
 
 class SnowflakeWidget extends StatefulWidget {
-    final ValueNotifier<bool> showNextSnowflakeEdges;
+    final bool editSnowflake;
 
-    const SnowflakeWidget(this.showNextSnowflakeEdges, {super.key});
+    const SnowflakeWidget(this.editSnowflake, {super.key});
     
     @override
     State<StatefulWidget> createState() => _SnowflakeWidgetState();
@@ -56,7 +56,7 @@ class _SnowflakeWidgetState extends State<SnowflakeWidget> with SingleTickerProv
                     child: GestureDetector(
                         // TODO: implement touch actions
                         child: CustomPaint(
-                            painter: _SnowflakePainter(widget.showNextSnowflakeEdges, current, next),
+                            painter: _SnowflakePainter(widget.editSnowflake, current, next),
                             size: canvasSize,
                         )
                     ),
@@ -67,7 +67,7 @@ class _SnowflakeWidgetState extends State<SnowflakeWidget> with SingleTickerProv
 }
 
 class _SnowflakePainter extends CustomPainter {
-    final ValueNotifier<bool> showNextSnowflakeEdges;
+    final bool showNextSnowflakeEdges;
     final Render current;
     final Render next;
 
@@ -76,14 +76,14 @@ class _SnowflakePainter extends CustomPainter {
     @override
     void paint(Canvas canvas, Size size) {
         _drawCurrent(current, canvas);
-        if (showNextSnowflakeEdges.value) {
+        if (showNextSnowflakeEdges) {
             _drawNext(next, canvas);
         }
     }
 
     @override
     bool shouldRepaint(covariant _SnowflakePainter oldDelegate) =>
-        showNextSnowflakeEdges.value != oldDelegate.showNextSnowflakeEdges.value;
+        showNextSnowflakeEdges != oldDelegate.showNextSnowflakeEdges;
     
     void _drawCurrent(Render render, Canvas canvas) {
         Paint edgePaint = Paint()

@@ -37,7 +37,7 @@ class MainPage extends StatefulWidget {
 }
 
 class MainPageState extends State<MainPage> with SingleTickerProviderStateMixin {
-    final showNextSnowflakeEdges = ValueNotifier(false);
+    bool editSnowflake = false;
 
     @override
     Widget build(BuildContext context) {
@@ -46,28 +46,29 @@ class MainPageState extends State<MainPage> with SingleTickerProviderStateMixin 
             width: size.width,
             height: size.height,
             decoration: theme.getBackground(),
-            child: ValueListenableBuilder<bool>(
-                valueListenable: showNextSnowflakeEdges,
-                builder: (context, value, child) {
-                    return Stack(
-                        children: [
-                            SizedBox(
-                                width: size.width,
-                                height: size.height,
-                                child: SnowflakeWidget(showNextSnowflakeEdges),
-                            ),
-                            Positioned(
-                                bottom: 0,
-                                child: SizedBox(
-                                    width: size.width,
-                                    height: appBarHeight,
-                                    child: bottom_app_bar.BottomAppBar(showNextSnowflakeEdges),
-                                ),
-                            )
-                        ],
-                    );
-                },
-            )
+            child: Stack(
+                children: [
+                    SizedBox(
+                        width: size.width,
+                        height: size.height,
+                        child: SnowflakeWidget(editSnowflake),
+                    ),
+                    Positioned(
+                        bottom: 0,
+                        child: SizedBox(
+                            width: size.width,
+                            height: appBarHeight,
+                            child: bottom_app_bar.BottomAppBar(editSnowflake, updateEditSnowflake),
+                        ),
+                    )
+                ],
+            ),
         );
+    }
+
+    void updateEditSnowflake(bool edit) {
+        setState(() {
+            editSnowflake = edit;
+        });
     }
 }
