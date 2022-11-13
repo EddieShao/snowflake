@@ -16,5 +16,5 @@ abstract class _AppState<T> extends ChangeNotifier {
     }
 }
 
-class EditState<bool> extends _AppState { EditState(super.value); }
-class DoneState<bool> extends _AppState { DoneState(super.value); }
+class EditState extends _AppState<bool> { EditState(super.value); }
+class DoneState extends _AppState<bool> { DoneState(super.value); }

@@ -14,9 +14,11 @@ class Graph<T> {
 
     HashMap<Node<T>, List<Point?>> state() => HashMap.of(_nodes);
 
-    /// Return a set of all edges that can be immediately added to this graph.
-    Set<Pair<Point, Point>> next() {
-        final free = <Pair<Point, Point>>{};
+    /// Return a list of edges and a list of nodes that can be added to this graph in the next operation.
+    Pair<List<Point>, List<Pair<Point, Point>>> next() {
+        // final free = <Pair<Pair<Point, Point>, Point?>>{};
+        final nodes = <Point>{};
+        final edges = <Pair<Point, Point>>{};
 
         const xOffsets = [-1, 0, 1, -1, 0, 1];
         const yOffsets = [1, 2, 1, -1, -2, -1];
@@ -27,12 +29,18 @@ class Graph<T> {
 
             for (int i = 0; i < 6; i++) {
                 if (availability[i] && entry.value[i] == null) {
-                    free.add(Pair(from, Point(from.x + xOffsets[i], from.y + yOffsets[i])));
+                    // free.add(Pair(from, Point(from.x + xOffsets[i], from.y + yOffsets[i])));
+                    final nextNode = Point(from.x + xOffsets[i], from.y + yOffsets[i]);
+                    edges.add(Pair(from, nextNode));
+                    if (_nodes.entries.find((e) => e.key.point == nextNode) == null) {
+                        nodes.add(nextNode);
+                    }
                 }
             }
         }
 
-        return free;
+        // return free.toList();
+        return Pair(nodes.toList(), edges.toList());
     }
 
     int depth() => _nodes.keys.map((node) => node.point.y).reduce(max);

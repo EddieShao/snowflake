@@ -72,15 +72,17 @@ class Snowflake {
     /// Return geometry data of all possible next edges in this snowflake. The render fits inside a
     /// canvas with the given [size].
     Render renderNext(Size size) {
-        return Render(
-            [],
-            _arm.next().map((edge) =>
-                Pair(
-                    _toScreen(edge.first, size.width).center(size),
-                    _toScreen(edge.second, size.width).center(size)
-                )
-            ).toList()
+        final next = _arm.next();
+
+        final nodes = next.first.map((node) => _toScreen(node, size.width).center(size));
+        final edges = next.second.map((edge) =>
+            Pair(
+                _toScreen(edge.first, size.width).center(size),
+                _toScreen(edge.second, size.width).center(size)
+            )
         );
+
+        return Render(nodes.toList(), edges.toList());
     }
 
     bool add(int x1, int y1, int x2, int y2, int value) =>

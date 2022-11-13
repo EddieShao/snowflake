@@ -124,17 +124,26 @@ class _SnowflakePainter extends CustomPainter {
     }
 
     void _drawNext(Render render, Canvas canvas) {
-        final paint = Paint()
+        final edgePaint = Paint()
             ..color = theme.white.withOpacity(0.2)
             ..strokeWidth = 2
             ..style = PaintingStyle.stroke;
+        
+        Paint nodePaint = Paint()
+            ..color = theme.white.withOpacity(0.2)
+            ..strokeWidth = 0
+            ..style = PaintingStyle.fill;
 
         for (final edge in render.edges) {
             canvas.drawLine(
                 Offset(edge.first.x, edge.first.y),
                 Offset(edge.second.x, edge.second.y),
-                paint
+                edgePaint
             );
+        }
+
+        for (final node in render.nodes) {
+            canvas.drawCircle(Offset(node.x, node.y), 6, nodePaint);
         }
     }
 }

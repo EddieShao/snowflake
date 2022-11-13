@@ -10,11 +10,19 @@ void main() {
         });
         group("next()", () {
             test("Should only have (0, 2) as next for root node.", () {
-                expect(graph.next(), {const Pair(Point(0, 0), Point(0, 2))});
+                final next = graph.next();
+                expect(next.first.toSet(), {const Point(0, 2)});
+                expect(next.second.toSet(), {const Pair(Point(0, 0), Point(0, 2))});
             });
             test("Should have 3 children available for outer node", () {
                 graph.add(const Pair(Point(0, 0), Point(0, 2)), 4);
-                expect(graph.next(), {
+                final next = graph.next();
+                expect(next.first.toSet(), {
+                    const Point(-1, 3),
+                    const Point(0, 4),
+                    const Point(1, 3)
+                });
+                expect(next.second.toSet(), {
                     const Pair(Point(0, 2), Point(-1, 3)),
                     const Pair(Point(0, 2), Point(0, 4)),
                     const Pair(Point(0, 2), Point(1, 3))
@@ -23,17 +31,39 @@ void main() {
             test("Should leave out edges that already exist from a node.", () {
                 graph.add(const Pair(Point(0, 0), Point(0, 2)), 4);
                 graph.add(const Pair(Point(0, 2), Point(-1, 3)), 1);
-                expect(graph.next(), {
+                final next = graph.next();
+                expect(next.first.toSet(), {
+                    const Point(-1, 5),
+                    const Point(0, 4),
+                    const Point(1, 3)
+                });
+                expect(next.second.toSet(), {
                     const Pair(Point(0, 2), Point(0, 4)),
                     const Pair(Point(0, 2), Point(1, 3)),
                     const Pair(Point(-1, 3), Point(-1, 5)),
                     const Pair(Point(-1, 3), Point(0, 4))
                 });
             });
+            test("Should not add already existing nodes.", () {
+                graph.add(const Pair(Point(0, 0), Point(0, 2)), 4);
+                graph.add(const Pair(Point(0, 2), Point(-1, 3)), 1);
+                graph.add(const Pair(Point(0, 2), Point(0, 4)), 2);
+                final next = graph.next();
+                expect(next.first.contains(const Point(-1, 3)), false);
+                expect(next.first.contains(const Point(0, 4)), false);
+            });
             test("complicated graph.", () {
                 graph.add(const Pair(Point(0, 0), Point(0, 2)), 1);
                 graph.add(const Pair(Point(0, 2), Point(0, 4)), 2);
-                expect(graph.next(), {
+                final next = graph.next();
+                expect(next.first.toSet(), {
+                    const Point(-1, 3),
+                    const Point(-1, 5),
+                    const Point(0, 6),
+                    const Point(1, 3),
+                    const Point(1, 5)
+                });
+                expect(next.second.toSet(), {
                     const Pair(Point(0, 2), Point(-1, 3)),
                     const Pair(Point(0, 2), Point(1, 3)),
                     const Pair(Point(-1, 3), Point(0, 4)),
