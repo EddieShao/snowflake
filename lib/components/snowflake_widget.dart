@@ -3,44 +3,16 @@ import 'dart:math' as math;
 import 'package:snowflake/theme.dart' as theme;
 import 'package:snowflake/logic/snowflake.dart';
 
-class SnowflakeWidget extends StatefulWidget {
-    const SnowflakeWidget({super.key});
+class SnowflakeWidget extends StatelessWidget {
+    final ValueNotifier<bool> showNextSnowflakeEdges;
+    final AnimationController spin;
+
+    const SnowflakeWidget(this.showNextSnowflakeEdges, this.spin, {super.key});
     
     @override
-    State<StatefulWidget> createState() => SnowflakeWidgetState();
-}
-
-class SnowflakeWidgetState extends State<SnowflakeWidget> with SingleTickerProviderStateMixin {
-    late final AnimationController spin = AnimationController(vsync: this, duration: const Duration(seconds: 60))..repeat();
-
-    @override
-    void initState() {
-        super.initState();
-        var sf = Snowflake();
-
-        // TODO: replace hard-coded stuff with DB access
-        sf.clear();
-        sf.add(0, 0, 0, 2, 0);
-        sf.add(0, 2, -1, 3, 0);
-        sf.add(-1, 3, -1, 5, 0);
-        sf.add(-1, 5, 0, 6, 0);
-        sf.add(0, 6, 1, 5, 0);
-        sf.add(0, 6, -1, 7, 0);
-        sf.add(0, 6, 1, 7, 0);
-        sf.add(0, 6, 0, 8, 0);
-        sf.add(0, 6, 0, 4, 0);
-        // for (int i = 4; i < 60; i++) {
-        //     sf.add(0, i * 2, 0, (i + 1) * 2, 0);
-        // }
-    }
-
-    @override
-    void dispose() {
-        super.dispose();
-    }
-
-    @override
     Widget build(BuildContext context) {
+        final canvasSize = MediaQuery.of(context).size;
+
         return InteractiveViewer(
             maxScale: 2,
             minScale: 1,
@@ -54,12 +26,11 @@ class SnowflakeWidgetState extends State<SnowflakeWidget> with SingleTickerProvi
                 },
                 child: Center(
                     child: Listener(
-                        onPointerUp: ((event) => Snowflake().onTap?.call(event)),
                         child: CustomPaint(
-                            painter: const _SnowflakePainter(),
-                            size: Size.square(MediaQuery.of(context).size.width - 40)
-                        ),
-                    )
+                            painter: _SnowflakePainter(showNextSnowflakeEdges),
+                            size: Size.square(math.min(canvasSize.width, canvasSize.height) - 10),
+                        )
+                    ),
                 ),
             ),
         );
@@ -67,32 +38,27 @@ class SnowflakeWidgetState extends State<SnowflakeWidget> with SingleTickerProvi
 }
 
 class _SnowflakePainter extends CustomPainter {
-    const _SnowflakePainter();
+    final ValueNotifier<bool> showNextSnowflakeEdges;
+
+    _SnowflakePainter(this.showNextSnowflakeEdges);
 
     @override
     void paint(Canvas canvas, Size size) {
-        final render = Snowflake().render(size);
-        canvas.drawSnowflake(render);
-        Snowflake().onTap = (event) {
-            // TODO: implement tapping stuff
-        };
+        canvas.drawSnowflake(Snowflake().renderCurrent(size));
+        if (showNextSnowflakeEdges.value) {
+            canvas.drawNextSnowflakeEdges(Snowflake().renderNext(size));
+        }
     }
 
     @override
-    bool shouldRepaint(covariant CustomPainter oldDelegate) {
-        return false;
-    }
+    bool shouldRepaint(covariant _SnowflakePainter oldDelegate) =>
+        showNextSnowflakeEdges.value != oldDelegate.showNextSnowflakeEdges.value;
 }
 
 extension SnowflakeDrawer on Canvas {
     void drawSnowflake(Render render) {
         Paint edgePaint = Paint()
             ..color = theme.white
-            ..strokeWidth = 2
-            ..style = PaintingStyle.stroke;
-        
-        Paint nextEdgePaint = Paint()
-            ..color = theme.white.withOpacity(0.2)
             ..strokeWidth = 2
             ..style = PaintingStyle.stroke;
         
@@ -109,16 +75,23 @@ extension SnowflakeDrawer on Canvas {
             );
         }
 
-        for (final edge in render.nextEdges) {
+        for (var node in render.nodes) {
+            drawCircle(Offset(node.x, node.y), 6, nodePaint);
+        }
+    }
+
+    void drawNextSnowflakeEdges(Render render) {
+        final paint = Paint()
+            ..color = theme.white.withOpacity(0.2)
+            ..strokeWidth = 2
+            ..style = PaintingStyle.stroke;
+
+        for (final edge in render.edges) {
             drawLine(
                 Offset(edge.first.x, edge.first.y),
                 Offset(edge.second.x, edge.second.y),
-                nextEdgePaint
+                paint
             );
-        }
-
-        for (var node in render.nodes) {
-            drawCircle(Offset(node.x, node.y), 6, nodePaint);
         }
     }
 }

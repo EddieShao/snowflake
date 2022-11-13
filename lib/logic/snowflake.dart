@@ -13,38 +13,17 @@ class Snowflake {
     Snowflake._internal();
 
     final Graph<int> _arm = Graph(0);
-    bool showNext = false;
-
-    void Function(PointerEvent event)? onTap;
 
     /// Return geometry data of the current snowflake. The render fits inside a canvas with the
     /// given [size].
-    /// 
-    /// If [showNext] is true, the next available edges of the snowflake will be rendered as well.
-    Render render(Size size) {
-        int depth = showNext ? _arm.depth() + 2 : _arm.depth();
-
-        // edge length s.t. we can fit [depth] of them in a line on the canvas.
-        double edgeLength = size.width / (depth % 2 == 0 ? depth : depth + 1);
-        // 30 degrees
-        double offsetAngle = math.pi / 6;
-
-        // convert graph coordinates to screen coordinates
-        Coordinate toScreen(Point point) {
-            double hypotenuse = (point.y - point.x) / 2 * edgeLength;
-            return Coordinate(
-                hypotenuse * math.cos(offsetAngle),
-                hypotenuse * math.sin(offsetAngle) + point.x * edgeLength
-            );
-        }
-
+    Render renderCurrent(Size size) {
         List<Coordinate> armNodes = []; // nodes for 1 arm of the snowflake
         List<Pair<Coordinate, Coordinate>> armEdges = []; // edges for 1 arm of the snowflake
 
         // create blueprint for 1 arm of the snowflake
         _arm.state().forEach((node, connections) {
             // render this node; don't render the root
-            Coordinate from = toScreen(node.point);
+            Coordinate from = _toScreen(node.point, size.width);
             if (node.point.x != 0 || node.point.y != 0) {
                 armNodes.add(from);
             }
@@ -56,13 +35,13 @@ class Snowflake {
 
             // render edge to each non-null child
             if (lchild != null) {
-                armEdges.add(Pair(from, toScreen(lchild)));
+                armEdges.add(Pair(from, _toScreen(lchild, size.width)));
             }
             if (cchild != null) {
-                armEdges.add(Pair(from, toScreen(cchild)));
+                armEdges.add(Pair(from, _toScreen(cchild, size.width)));
             }
             if (rchild != null) {
-                armEdges.add(Pair(from, toScreen(rchild)));
+                armEdges.add(Pair(from, _toScreen(rchild, size.width)));
             }
         });
 
@@ -87,25 +66,29 @@ class Snowflake {
             }
         }
 
+        return Render(nodes, edges);
+    }
+
+    /// Return geometry data of all possible next edges in this snowflake. The render fits inside a
+    /// canvas with the given [size].
+    Render renderNext(Size size) {
         final List<Pair<Coordinate, Coordinate>> nextEdges = [];
-        if (showNext) {
-            final armNextEdges = _arm.next().map((edge) => Pair(toScreen(edge.first), toScreen(edge.second)));
+        final armNextEdges = _arm.next().map((edge) => Pair(_toScreen(edge.first, size.width), _toScreen(edge.second, size.width)));
+    
+        for (int i = 0; i < 6; i++) {
+            double angle = i * math.pi / 3;
 
-            for (int i = 0; i < 6; i++) {
-                double angle = i * math.pi / 3;
-
-                for (final edge in armNextEdges) {
-                    nextEdges.add(
-                        Pair(
-                            edge.first.rotate(angle).center(size),
-                            edge.second.rotate(angle).center(size)
-                        )
-                    );
-                }
+            for (final edge in armNextEdges) {
+                nextEdges.add(
+                    Pair(
+                        edge.first.rotate(angle).center(size),
+                        edge.second.rotate(angle).center(size)
+                    )
+                );
             }
         }
 
-        return Render(nodes, edges, nextEdges);
+        return Render([], nextEdges);
     }
 
     bool add(int x1, int y1, int x2, int y2, int value) =>
@@ -118,14 +101,29 @@ class Snowflake {
         _arm.remove(Pair(Point(x1, y1), Point(x2, y2)));
 
     void clear() => _arm.clear();
+
+    Coordinate _toScreen(Point point, double canvasLength) {
+        int depth = _arm.depth() + 2;
+
+        // edge length s.t. we can fit [depth] of them in a line on the canvas.
+        double edgeLength = canvasLength / (depth % 2 == 0 ? depth : depth + 1);
+        // 30 degrees
+        double offsetAngle = math.pi / 6;
+
+        // convert graph coordinates to screen coordinates
+        double hypotenuse = (point.y - point.x) / 2 * edgeLength;
+        return Coordinate(
+            hypotenuse * math.cos(offsetAngle),
+            hypotenuse * math.sin(offsetAngle) + point.x * edgeLength
+        );
+    }
 }
 
 class Render {
     final List<Coordinate> nodes;
     final List<Pair<Coordinate, Coordinate>> edges;
-    final List<Pair<Coordinate, Coordinate>> nextEdges;
 
-    const Render(this.nodes, this.edges, this.nextEdges);
+    const Render(this.nodes, this.edges);
 }
 
 class Coordinate {

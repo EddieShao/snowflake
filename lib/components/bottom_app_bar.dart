@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:snowflake/logic/snowflake.dart';
-import 'package:snowflake/theme.dart' as theme;
 
 class BottomAppBar extends StatelessWidget {
-    const BottomAppBar({super.key});
+    final ValueNotifier<bool> showNextSnowflakeEdges;
+
+    const BottomAppBar(this.showNextSnowflakeEdges, {super.key});
 
     @override
     Widget build(BuildContext context) {
@@ -28,7 +29,7 @@ class BottomAppBar extends StatelessWidget {
                     icon: const Icon(Icons.edit),
                     tooltip: "Show next available arms",
                     onPressed: () {
-                        sf.showNext = !sf.showNext;
+                        showNextSnowflakeEdges.value = !showNextSnowflakeEdges.value;
                     },
                 ),
             ],
