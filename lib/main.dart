@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:snowflake/app_state.dart';
 import 'components/snowflake_widget.dart';
 import 'components/bottom_app_bar.dart' as bottom_app_bar;
 import 'package:snowflake/theme.dart' as theme;
@@ -28,16 +30,9 @@ class MyApp extends StatelessWidget {
     }
 }
 
-class MainPage extends StatefulWidget {
+class MainPage extends StatelessWidget {
     const MainPage({super.key});
     
-    @override
-    State<StatefulWidget> createState() => MainPageState();
-}
-
-class MainPageState extends State<MainPage> with SingleTickerProviderStateMixin {
-    bool editSnowflake = false;
-
     @override
     Widget build(BuildContext context) {
         final Size size = MediaQuery.of(context).size;
@@ -45,29 +40,29 @@ class MainPageState extends State<MainPage> with SingleTickerProviderStateMixin 
             width: size.width,
             height: size.height,
             decoration: theme.getBackground(),
-            child: Stack(
-                children: [
-                    SizedBox(
-                        width: size.width,
-                        height: size.height,
-                        child: SnowflakeWidget(editSnowflake),
-                    ),
-                    Positioned(
-                        bottom: 0,
-                        child: SizedBox(
-                            width: size.width,
-                            height: appBarHeight,
-                            child: bottom_app_bar.BottomAppBar(editSnowflake, updateEditSnowflake),
-                        ),
-                    )
+            child: MultiProvider(
+                providers: [
+                    ChangeNotifierProvider(create: (context) => EditState(false),),
+                    ChangeNotifierProvider(create:(context) => DoneState(false),),
                 ],
+                child: Stack(
+                    children: [
+                        SizedBox(
+                            width: size.width,
+                            height: size.height,
+                            child: const SnowflakeWidget(),
+                        ),
+                        Positioned(
+                            bottom: 0,
+                            child: SizedBox(
+                                width: size.width,
+                                height: appBarHeight,
+                                child: const bottom_app_bar.BottomAppBar(),
+                            ),
+                        )
+                    ],
+                ),
             ),
         );
-    }
-
-    void updateEditSnowflake(bool edit) {
-        setState(() {
-            editSnowflake = edit;
-        });
     }
 }

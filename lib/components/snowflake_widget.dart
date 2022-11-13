@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:snowflake/app_state.dart';
 import 'dart:math' as math;
 import 'package:snowflake/theme.dart' as theme;
 import 'package:snowflake/logic/snowflake.dart';
 
 class SnowflakeWidget extends StatefulWidget {
-    final bool editSnowflake;
-
-    const SnowflakeWidget(this.editSnowflake, {super.key});
+    const SnowflakeWidget({super.key});
     
     @override
     State<StatefulWidget> createState() => _SnowflakeWidgetState();
@@ -14,11 +14,6 @@ class SnowflakeWidget extends StatefulWidget {
 
 class _SnowflakeWidgetState extends State<SnowflakeWidget> with SingleTickerProviderStateMixin {
     late final AnimationController spin = AnimationController(vsync: this, duration: const Duration(seconds: 60))..repeat();
-
-    // TODO: This state is for determining whether or not the user has used up all their
-    //  "resources" and hence finished building the snowflake. State will need to be used by nav bar
-    //  as well, so this will need to be moved to main.dart. Putting it here hard-coded for now.
-    bool done = false;
 
     @override
     void initState() {
@@ -40,26 +35,36 @@ class _SnowflakeWidgetState extends State<SnowflakeWidget> with SingleTickerProv
 
     @override
     Widget build(BuildContext context) {
+        final sf = Snowflake();
+
         final contextSize = MediaQuery.of(context).size;
         final canvasSize = Size.square(math.min(contextSize.width, contextSize.height) - 10);
 
-        final current = Snowflake().renderCurrent(canvasSize);
-        final next = Snowflake().renderNext(canvasSize);
+        Render current() => sf.renderCurrent(canvasSize);
+        Render next() => sf.renderNext(canvasSize);
 
         final body = Center(
             child: GestureDetector(
                 // TODO: implement touch actions
-                child: CustomPaint(
-                    painter: _SnowflakePainter(widget.editSnowflake, current, next),
-                    size: canvasSize,
+                child: Consumer<EditState>(
+                    builder: (context, editState, child) {
+                        return CustomPaint(
+                            painter: _SnowflakePainter(editState.value, current(), next()),
+                            size: canvasSize,
+                        );
+                    },
                 ),
             ),
         );
 
-        return InteractiveViewer(
-            maxScale: 2,
-            minScale: 1,
-            child: done ? _withSpin(body) : body,
+        return Consumer<DoneState>(
+            builder: (context, doneState, child) {
+                return InteractiveViewer(
+                    maxScale: 2,
+                    minScale: 1,
+                    child: doneState.value ? _withSpin(body) : body,
+                );
+            },
         );
     }
 
@@ -77,23 +82,22 @@ class _SnowflakeWidgetState extends State<SnowflakeWidget> with SingleTickerProv
 }
 
 class _SnowflakePainter extends CustomPainter {
-    final bool showNextSnowflakeEdges;
+    final bool editing;
     final Render current;
     final Render next;
 
-    _SnowflakePainter(this.showNextSnowflakeEdges, this.current, this.next);
+    _SnowflakePainter(this.editing, this.current, this.next);
 
     @override
     void paint(Canvas canvas, Size size) {
         _drawCurrent(current, canvas);
-        if (showNextSnowflakeEdges) {
+        if (editing) {
             _drawNext(next, canvas);
         }
     }
 
     @override
-    bool shouldRepaint(covariant _SnowflakePainter oldDelegate) =>
-        showNextSnowflakeEdges != oldDelegate.showNextSnowflakeEdges;
+    bool shouldRepaint(covariant _SnowflakePainter oldDelegate) => true;
     
     void _drawCurrent(Render render, Canvas canvas) {
         Paint edgePaint = Paint()
