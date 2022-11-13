@@ -11,7 +11,11 @@ class SnowflakeWidget extends StatelessWidget {
     
     @override
     Widget build(BuildContext context) {
-        final canvasSize = MediaQuery.of(context).size;
+        final contextSize = MediaQuery.of(context).size;
+        final canvasSize = Size.square(math.min(contextSize.width, contextSize.height) - 10);
+
+        final current = Snowflake().renderCurrent(canvasSize);
+        final next = Snowflake().renderNext(canvasSize);
 
         return InteractiveViewer(
             maxScale: 2,
@@ -25,10 +29,11 @@ class SnowflakeWidget extends StatelessWidget {
                     );
                 },
                 child: Center(
-                    child: Listener(
+                    child: GestureDetector(
+                        // TODO: implement touch actions
                         child: CustomPaint(
-                            painter: _SnowflakePainter(showNextSnowflakeEdges),
-                            size: Size.square(math.min(canvasSize.width, canvasSize.height) - 10),
+                            painter: _SnowflakePainter(showNextSnowflakeEdges, current, next),
+                            size: canvasSize,
                         )
                     ),
                 ),
@@ -39,24 +44,24 @@ class SnowflakeWidget extends StatelessWidget {
 
 class _SnowflakePainter extends CustomPainter {
     final ValueNotifier<bool> showNextSnowflakeEdges;
+    final Render current;
+    final Render next;
 
-    _SnowflakePainter(this.showNextSnowflakeEdges);
+    _SnowflakePainter(this.showNextSnowflakeEdges, this.current, this.next);
 
     @override
     void paint(Canvas canvas, Size size) {
-        canvas.drawSnowflake(Snowflake().renderCurrent(size));
+        drawCurrent(current, canvas);
         if (showNextSnowflakeEdges.value) {
-            canvas.drawNextSnowflakeEdges(Snowflake().renderNext(size));
+            drawNext(next, canvas);
         }
     }
 
     @override
     bool shouldRepaint(covariant _SnowflakePainter oldDelegate) =>
         showNextSnowflakeEdges.value != oldDelegate.showNextSnowflakeEdges.value;
-}
-
-extension SnowflakeDrawer on Canvas {
-    void drawSnowflake(Render render) {
+    
+    void drawCurrent(Render render, Canvas canvas) {
         Paint edgePaint = Paint()
             ..color = theme.white
             ..strokeWidth = 2
@@ -68,7 +73,7 @@ extension SnowflakeDrawer on Canvas {
             ..style = PaintingStyle.fill;
 
         for (var edge in render.edges) {
-            drawLine(
+            canvas.drawLine(
                 Offset(edge.first.x, edge.first.y),
                 Offset(edge.second.x, edge.second.y),
                 edgePaint
@@ -76,18 +81,18 @@ extension SnowflakeDrawer on Canvas {
         }
 
         for (var node in render.nodes) {
-            drawCircle(Offset(node.x, node.y), 6, nodePaint);
+            canvas.drawCircle(Offset(node.x, node.y), 6, nodePaint);
         }
     }
 
-    void drawNextSnowflakeEdges(Render render) {
+    void drawNext(Render render, Canvas canvas) {
         final paint = Paint()
             ..color = theme.white.withOpacity(0.2)
             ..strokeWidth = 2
             ..style = PaintingStyle.stroke;
 
         for (final edge in render.edges) {
-            drawLine(
+            canvas.drawLine(
                 Offset(edge.first.x, edge.first.y),
                 Offset(edge.second.x, edge.second.y),
                 paint
