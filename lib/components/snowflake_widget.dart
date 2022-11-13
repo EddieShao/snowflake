@@ -3,12 +3,36 @@ import 'dart:math' as math;
 import 'package:snowflake/theme.dart' as theme;
 import 'package:snowflake/logic/snowflake.dart';
 
-class SnowflakeWidget extends StatelessWidget {
+class SnowflakeWidget extends StatefulWidget {
     final ValueNotifier<bool> showNextSnowflakeEdges;
-    final AnimationController spin;
 
-    const SnowflakeWidget(this.showNextSnowflakeEdges, this.spin, {super.key});
+    const SnowflakeWidget(this.showNextSnowflakeEdges, {super.key});
     
+    @override
+    State<StatefulWidget> createState() => _SnowflakeWidgetState();
+}
+
+class _SnowflakeWidgetState extends State<SnowflakeWidget> with SingleTickerProviderStateMixin {
+    late final AnimationController spin = AnimationController(vsync: this, duration: const Duration(seconds: 60))..repeat();
+
+    @override
+    void initState() {
+        super.initState();
+
+        // TODO: replace hard-coded stuff with DB access
+        Snowflake()
+            ..clear()
+            ..add(0, 0, 0, 2, 0)
+            ..add(0, 2, -1, 3, 0)
+            ..add(-1, 3, -1, 5, 0)
+            ..add(-1, 5, 0, 6, 0)
+            ..add(0, 6, 1, 5, 0)
+            ..add(0, 6, -1, 7, 0)
+            ..add(0, 6, 1, 7, 0)
+            ..add(0, 6, 0, 8, 0)
+            ..add(0, 6, 0, 4, 0);
+    }
+
     @override
     Widget build(BuildContext context) {
         final contextSize = MediaQuery.of(context).size;
@@ -32,7 +56,7 @@ class SnowflakeWidget extends StatelessWidget {
                     child: GestureDetector(
                         // TODO: implement touch actions
                         child: CustomPaint(
-                            painter: _SnowflakePainter(showNextSnowflakeEdges, current, next),
+                            painter: _SnowflakePainter(widget.showNextSnowflakeEdges, current, next),
                             size: canvasSize,
                         )
                     ),
@@ -51,9 +75,9 @@ class _SnowflakePainter extends CustomPainter {
 
     @override
     void paint(Canvas canvas, Size size) {
-        drawCurrent(current, canvas);
+        _drawCurrent(current, canvas);
         if (showNextSnowflakeEdges.value) {
-            drawNext(next, canvas);
+            _drawNext(next, canvas);
         }
     }
 
@@ -61,7 +85,7 @@ class _SnowflakePainter extends CustomPainter {
     bool shouldRepaint(covariant _SnowflakePainter oldDelegate) =>
         showNextSnowflakeEdges.value != oldDelegate.showNextSnowflakeEdges.value;
     
-    void drawCurrent(Render render, Canvas canvas) {
+    void _drawCurrent(Render render, Canvas canvas) {
         Paint edgePaint = Paint()
             ..color = theme.white
             ..strokeWidth = 2
@@ -85,7 +109,7 @@ class _SnowflakePainter extends CustomPainter {
         }
     }
 
-    void drawNext(Render render, Canvas canvas) {
+    void _drawNext(Render render, Canvas canvas) {
         final paint = Paint()
             ..color = theme.white.withOpacity(0.2)
             ..strokeWidth = 2

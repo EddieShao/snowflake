@@ -72,23 +72,15 @@ class Snowflake {
     /// Return geometry data of all possible next edges in this snowflake. The render fits inside a
     /// canvas with the given [size].
     Render renderNext(Size size) {
-        final List<Pair<Coordinate, Coordinate>> nextEdges = [];
-        final armNextEdges = _arm.next().map((edge) => Pair(_toScreen(edge.first, size.width), _toScreen(edge.second, size.width)));
-    
-        for (int i = 0; i < 6; i++) {
-            double angle = i * math.pi / 3;
-
-            for (final edge in armNextEdges) {
-                nextEdges.add(
-                    Pair(
-                        edge.first.rotate(angle).center(size),
-                        edge.second.rotate(angle).center(size)
-                    )
-                );
-            }
-        }
-
-        return Render([], nextEdges);
+        return Render(
+            [],
+            _arm.next().map((edge) =>
+                Pair(
+                    _toScreen(edge.first, size.width).center(size),
+                    _toScreen(edge.second, size.width).center(size)
+                )
+            ).toList()
+        );
     }
 
     bool add(int x1, int y1, int x2, int y2, int value) =>
@@ -115,7 +107,7 @@ class Snowflake {
         return Coordinate(
             hypotenuse * math.cos(offsetAngle),
             hypotenuse * math.sin(offsetAngle) + point.x * edgeLength
-        );
+        ).rotate(3 * math.pi / 2 - math.pi / 6);
     }
 }
 

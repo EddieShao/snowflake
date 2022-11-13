@@ -37,27 +37,7 @@ class MainPage extends StatefulWidget {
 }
 
 class MainPageState extends State<MainPage> with SingleTickerProviderStateMixin {
-    late final AnimationController spin = AnimationController(vsync: this, duration: const Duration(seconds: 60))..repeat();
-
     final showNextSnowflakeEdges = ValueNotifier(false);
-
-    @override
-    void initState() {
-        super.initState();
-
-        // TODO: replace hard-coded stuff with DB access
-        Snowflake()
-            ..clear()
-            ..add(0, 0, 0, 2, 0)
-            ..add(0, 2, -1, 3, 0)
-            ..add(-1, 3, -1, 5, 0)
-            ..add(-1, 5, 0, 6, 0)
-            ..add(0, 6, 1, 5, 0)
-            ..add(0, 6, -1, 7, 0)
-            ..add(0, 6, 1, 7, 0)
-            ..add(0, 6, 0, 8, 0)
-            ..add(0, 6, 0, 4, 0);
-    }
 
     @override
     Widget build(BuildContext context) {
@@ -74,7 +54,7 @@ class MainPageState extends State<MainPage> with SingleTickerProviderStateMixin 
                             SizedBox(
                                 width: size.width,
                                 height: size.height,
-                                child: SnowflakeWidget(showNextSnowflakeEdges, spin),
+                                child: SnowflakeWidget(showNextSnowflakeEdges),
                             ),
                             Positioned(
                                 bottom: 0,
