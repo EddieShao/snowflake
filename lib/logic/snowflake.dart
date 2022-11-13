@@ -107,7 +107,7 @@ class Snowflake {
         return Coordinate(
             hypotenuse * math.cos(offsetAngle),
             hypotenuse * math.sin(offsetAngle) + point.x * edgeLength
-        ).rotate(3 * math.pi / 2 - math.pi / 6);
+        ).rotate(3 * math.pi / 2 - offsetAngle);
     }
 }
 

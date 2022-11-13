@@ -15,6 +15,11 @@ class SnowflakeWidget extends StatefulWidget {
 class _SnowflakeWidgetState extends State<SnowflakeWidget> with SingleTickerProviderStateMixin {
     late final AnimationController spin = AnimationController(vsync: this, duration: const Duration(seconds: 60))..repeat();
 
+    // TODO: This state is for determining whether or not the user has used up all their
+    //  "resources" and hence finished building the snowflake. State will need to be used by nav bar
+    //  as well, so this will need to be moved to main.dart. Putting it here hard-coded for now.
+    bool done = false;
+
     @override
     void initState() {
         super.initState();
@@ -41,29 +46,34 @@ class _SnowflakeWidgetState extends State<SnowflakeWidget> with SingleTickerProv
         final current = Snowflake().renderCurrent(canvasSize);
         final next = Snowflake().renderNext(canvasSize);
 
-        return InteractiveViewer(
-            maxScale: 2,
-            minScale: 1,
-            child: AnimatedBuilder(
-                animation: spin,
-                builder: (context, child) {
-                    return Transform.rotate(
-                        angle: -2 * math.pi * spin.value,
-                        child: child,
-                    );
-                },
-                child: Center(
-                    child: GestureDetector(
-                        // TODO: implement touch actions
-                        child: CustomPaint(
-                            painter: _SnowflakePainter(widget.editSnowflake, current, next),
-                            size: canvasSize,
-                        )
-                    ),
+        final body = Center(
+            child: GestureDetector(
+                // TODO: implement touch actions
+                child: CustomPaint(
+                    painter: _SnowflakePainter(widget.editSnowflake, current, next),
+                    size: canvasSize,
                 ),
             ),
         );
+
+        return InteractiveViewer(
+            maxScale: 2,
+            minScale: 1,
+            child: done ? _withSpin(body) : body,
+        );
     }
+
+    AnimatedBuilder _withSpin(Widget body) =>
+        AnimatedBuilder(
+            animation: spin,
+            builder: (context, child) {
+                return Transform.rotate(
+                    angle: -2 * math.pi * spin.value,
+                    child: child,
+                );
+            },
+            child: body
+        );
 }
 
 class _SnowflakePainter extends CustomPainter {

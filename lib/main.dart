@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'components/snowflake_widget.dart';
 import 'components/bottom_app_bar.dart' as bottom_app_bar;
 import 'package:snowflake/theme.dart' as theme;
-import 'package:snowflake/logic/snowflake.dart';
 
 const double appBarHeight = 56;
 
