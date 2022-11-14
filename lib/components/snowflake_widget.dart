@@ -40,7 +40,7 @@ class _SnowflakeWidgetState extends State<SnowflakeWidget> with SingleTickerProv
         final contextSize = MediaQuery.of(context).size;
         final canvasSize = Size.square(math.min(contextSize.width, contextSize.height) - 10);
 
-        Render current() => sf.renderCurrent(canvasSize);
+        Render current() => sf.renderAll(canvasSize);
         Render next() => sf.renderNext(canvasSize);
 
         final body = Center(
@@ -110,7 +110,7 @@ class _SnowflakePainter extends CustomPainter {
             ..strokeWidth = 0
             ..style = PaintingStyle.fill;
 
-        for (var edge in render.edges) {
+        for (final edge in render.edges.values.flatten()) {
             canvas.drawLine(
                 Offset(edge.first.x, edge.first.y),
                 Offset(edge.second.x, edge.second.y),
@@ -118,7 +118,7 @@ class _SnowflakePainter extends CustomPainter {
             );
         }
 
-        for (var node in render.nodes) {
+        for (final node in render.nodes.values.flatten()) {
             canvas.drawCircle(Offset(node.x, node.y), 6, nodePaint);
         }
     }
@@ -134,7 +134,7 @@ class _SnowflakePainter extends CustomPainter {
             ..strokeWidth = 0
             ..style = PaintingStyle.fill;
 
-        for (final edge in render.edges) {
+        for (final edge in render.edges.values.flatten()) {
             canvas.drawLine(
                 Offset(edge.first.x, edge.first.y),
                 Offset(edge.second.x, edge.second.y),
@@ -142,8 +142,12 @@ class _SnowflakePainter extends CustomPainter {
             );
         }
 
-        for (final node in render.nodes) {
+        for (final node in render.nodes.values.flatten()) {
             canvas.drawCircle(Offset(node.x, node.y), 6, nodePaint);
         }
     }
+}
+
+extension<E> on Iterable<Iterable<E>> {
+    Iterable<E> flatten() => [for (final sub in this) ...sub];
 }
