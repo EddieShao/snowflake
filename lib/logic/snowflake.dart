@@ -13,16 +13,16 @@ class Snowflake {
 
     Snowflake._internal();
 
-    final Graph<int> _arm = Graph(0);
+    final Graph<NodeType> _arm = Graph(NodeType.circle);
 
     /// Return geometry data of the entire snowflake. The render fits inside a canvas with the
     /// given [size].
-    Render renderAll(Size size) {
+    Render<NodeType> renderAll(Size size) {
         final converted = _convertArm(size);
         final armNodes = converted.first; // nodes for 1 arm of the snowflake
         final armEdges = converted.second; // edges for 1 arm of the snowflake
 
-        final nodes = HashMap<Point, List<Coordinate>>(); // nodes for full snowflake
+        final nodes = HashMap<Node<NodeType>, List<Coordinate>>(); // nodes for full snowflake
         final edges = HashMap<Edge<Point>, List<Edge<Coordinate>>>(); // edges for full snowflake
 
         // use blueprint to render all 6 arms and complete the snowflake
@@ -48,9 +48,9 @@ class Snowflake {
 
     /// Return geometry data for 1 arm of this snowflake. The render fits inside a canvas with the
     /// given [size].
-    Render renderOne(Size size) {
+    Render<NodeType> renderOne(Size size) {
         final converted = _convertArm(size);
-        final nodes = HashMap<Point, List<Coordinate>>();
+        final nodes = HashMap<Node<NodeType>, List<Coordinate>>();
         final edges = HashMap<Edge<Point>, List<Edge<Coordinate>>>();
 
         for (final entry in converted.first.entries) {
@@ -66,10 +66,10 @@ class Snowflake {
 
     /// Return geometry data of all possible next edges in this snowflake. The render fits inside a
     /// canvas with the given [size].
-    Render renderNext(Size size) {
+    Render<NodeType> renderNext(Size size) {
         final next = _arm.next();
 
-        final nodes = next.first.map((node) => MapEntry(node, [_toScreen(node, size.width).center(size)]));
+        final nodes = next.first.map((node) => MapEntry(node, [_toScreen(node.point, size.width).center(size)]));
         final edges = next.second.map((edge) =>
             MapEntry(edge, [Pair(_toScreen(edge.first, size.width).center(size), _toScreen(edge.second, size.width).center(size))])
         );
@@ -77,11 +77,13 @@ class Snowflake {
         return Render(HashMap.fromEntries(nodes), HashMap.fromEntries(edges));
     }
 
-    bool add(int x1, int y1, int x2, int y2, int value) =>
-        _arm.add(Pair(Point(x1, y1), Point(x2, y2)), value);
+    int depth() => _arm.depth();
 
-    bool update(int x, int y, int newValue) =>
-        _arm.update(Point(x, y), newValue);
+    bool add(int x1, int y1, int x2, int y2) =>
+        _arm.add(Pair(Point(x1, y1), Point(x2, y2)), NodeType.circle);
+
+    bool update(int x, int y, NodeType newType) =>
+        _arm.update(Point(x, y), newType);
 
     bool remove(int x1, int y1, int x2, int y2) =>
         _arm.remove(Pair(Point(x1, y1), Point(x2, y2)));
@@ -104,8 +106,8 @@ class Snowflake {
         ).rotate(3 * math.pi / 2 - offsetAngle);
     }
 
-    Pair<HashMap<Point, Coordinate>, HashMap<Edge<Point>, Edge<Coordinate>>> _convertArm(Size size) {
-        final nodes = HashMap<Point, Coordinate>(); // nodes for 1 arm of the snowflake
+    Pair<HashMap<Node<NodeType>, Coordinate>, HashMap<Edge<Point>, Edge<Coordinate>>> _convertArm(Size size) {
+        final nodes = HashMap<Node<NodeType>, Coordinate>(); // nodes for 1 arm of the snowflake
         final edges = HashMap<Edge<Point>, Edge<Coordinate>>(); // edges for 1 arm of the snowflake
 
         // create blueprint for 1 arm of the snowflake
@@ -113,7 +115,7 @@ class Snowflake {
             // render this node; don't render the root
             Coordinate from = _toScreen(node.point, size.width);
             if (node.point.x != 0 || node.point.y != 0) {
-                nodes[node.point] = from;
+                nodes[node] = from;
             }
 
             // children
@@ -139,8 +141,8 @@ class Snowflake {
 
 typedef Edge<T> = Pair<T, T>;
 
-class Render {
-    final HashMap<Point, List<Coordinate>> nodes;
+class Render<T> {
+    final HashMap<Node<T>, List<Coordinate>> nodes;
     final HashMap<Edge<Point>, List<Edge<Coordinate>>> edges;
 
     const Render(this.nodes, this.edges);
@@ -176,4 +178,9 @@ class Coordinate {
     Coordinate center(Size size) {
         return Coordinate(x + size.width / 2, y + size.height / 2);
     }
+}
+
+enum NodeType {
+    circle,
+    square
 }

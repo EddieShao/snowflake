@@ -4,23 +4,24 @@ import 'package:snowflake/utils.dart';
 
 void main() {
     group("Graph", () {
-        final graph = Graph(0);
+        const defaultValue = 0;
+        final graph = Graph(defaultValue);
         setUp(() {
             graph.clear();
         });
         group("next()", () {
             test("Should only have (0, 2) as next for root node.", () {
                 final next = graph.next();
-                expect(next.first.toSet(), {const Point(0, 2)});
+                expect(next.first.toSet(), {Node(const Point(0, 2), defaultValue)});
                 expect(next.second.toSet(), {const Pair(Point(0, 0), Point(0, 2))});
             });
             test("Should have 3 children available for outer node", () {
                 graph.add(const Pair(Point(0, 0), Point(0, 2)), 4);
                 final next = graph.next();
                 expect(next.first.toSet(), {
-                    const Point(-1, 3),
-                    const Point(0, 4),
-                    const Point(1, 3)
+                    Node(const Point(-1, 3), defaultValue),
+                    Node(const Point(0, 4), defaultValue),
+                    Node(const Point(1, 3), defaultValue)
                 });
                 expect(next.second.toSet(), {
                     const Pair(Point(0, 2), Point(-1, 3)),
@@ -33,9 +34,9 @@ void main() {
                 graph.add(const Pair(Point(0, 2), Point(-1, 3)), 1);
                 final next = graph.next();
                 expect(next.first.toSet(), {
-                    const Point(-1, 5),
-                    const Point(0, 4),
-                    const Point(1, 3)
+                    Node(const Point(-1, 5), defaultValue),
+                    Node(const Point(0, 4), defaultValue),
+                    Node(const Point(1, 3), defaultValue)
                 });
                 expect(next.second.toSet(), {
                     const Pair(Point(0, 2), Point(0, 4)),
@@ -49,19 +50,19 @@ void main() {
                 graph.add(const Pair(Point(0, 2), Point(-1, 3)), 1);
                 graph.add(const Pair(Point(0, 2), Point(0, 4)), 2);
                 final next = graph.next();
-                expect(next.first.contains(const Point(-1, 3)), false);
-                expect(next.first.contains(const Point(0, 4)), false);
+                expect(next.first.contains(Node(const Point(-1, 3), defaultValue)), false);
+                expect(next.first.contains(Node(const Point(0, 4), defaultValue)), false);
             });
             test("complicated graph.", () {
                 graph.add(const Pair(Point(0, 0), Point(0, 2)), 1);
                 graph.add(const Pair(Point(0, 2), Point(0, 4)), 2);
                 final next = graph.next();
                 expect(next.first.toSet(), {
-                    const Point(-1, 3),
-                    const Point(-1, 5),
-                    const Point(0, 6),
-                    const Point(1, 3),
-                    const Point(1, 5)
+                    Node(const Point(-1, 3), defaultValue),
+                    Node(const Point(-1, 5), defaultValue),
+                    Node(const Point(0, 6), defaultValue),
+                    Node(const Point(1, 3), defaultValue),
+                    Node(const Point(1, 5), defaultValue)
                 });
                 expect(next.second.toSet(), {
                     const Pair(Point(0, 2), Point(-1, 3)),

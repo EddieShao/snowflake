@@ -4,6 +4,7 @@ import 'package:snowflake/app_state.dart';
 import 'dart:math' as math;
 import 'package:snowflake/theme.dart' as theme;
 import 'package:snowflake/logic/snowflake.dart';
+import 'package:snowflake/utils.dart';
 
 class SnowflakeWidget extends StatefulWidget {
     const SnowflakeWidget({super.key});
@@ -20,17 +21,27 @@ class _SnowflakeWidgetState extends State<SnowflakeWidget> with SingleTickerProv
         super.initState();
 
         // TODO: replace hard-coded stuff with DB access
-        Snowflake()
+        final sf = Snowflake();
+        sf
             ..clear()
-            ..add(0, 0, 0, 2, 0)
-            ..add(0, 2, -1, 3, 0)
-            ..add(-1, 3, -1, 5, 0)
-            ..add(-1, 5, 0, 6, 0)
-            ..add(0, 6, 1, 5, 0)
-            ..add(0, 6, -1, 7, 0)
-            ..add(0, 6, 1, 7, 0)
-            ..add(0, 6, 0, 8, 0)
-            ..add(0, 6, 0, 4, 0);
+            ..add(0, 0, 0, 2)
+            ..add(0, 2, -1, 3)
+            ..add(-1, 3, -1, 5)
+            ..add(-1, 5, 0, 6)
+            ..add(0, 6, 1, 5)
+            ..add(0, 6, -1, 7)
+            ..add(0, 6, 1, 7)
+            ..add(0, 6, 0, 8)
+            ..add(0, 6, 0, 4);
+        
+        // for (int i = 4; i < 40; i++) {
+        //     sf.add(0, i * 2, 0, i * 2 + 2);
+        // }
+
+        sf.update(0, 2, NodeType.square);
+        sf.update(-1, 7, NodeType.square);
+        sf.update(0, 8, NodeType.square);
+        sf.update(1, 7, NodeType.square);
     }
 
     @override
@@ -40,9 +51,9 @@ class _SnowflakeWidgetState extends State<SnowflakeWidget> with SingleTickerProv
         final contextSize = MediaQuery.of(context).size;
         final canvasSize = Size.square(math.min(contextSize.width, contextSize.height) - 10);
 
-        Render all() => sf.renderAll(canvasSize);
-        Render one() => sf.renderOne(canvasSize);
-        Render next() => sf.renderNext(canvasSize);
+        Render<NodeType> all() => sf.renderAll(canvasSize);
+        Render<NodeType> one() => sf.renderOne(canvasSize);
+        Render<NodeType> next() => sf.renderNext(canvasSize);
 
         final body = Center(
             child: GestureDetector(
@@ -90,10 +101,11 @@ class _SnowflakePainter extends CustomPainter {
     @override
     void paint(Canvas canvas, Size size) {
         final sf = Snowflake();
+        final edgeWidth = _scaleEdgeWidth(sf.depth());
         final paletteAll = Palette(
             edgePaint: Paint()
                 ..color = theme.white.withOpacity(editing ? 0.15 : 1)
-                ..strokeWidth = 2
+                ..strokeWidth = edgeWidth
                 ..style = PaintingStyle.stroke,
             defaultNodePaint: Paint()
                 ..color = theme.white.withOpacity(editing ? 0.15 : 1)
@@ -107,7 +119,7 @@ class _SnowflakePainter extends CustomPainter {
             final paletteNext = Palette(
                 edgePaint: Paint()
                     ..color = editColor.withOpacity(0.2)
-                    ..strokeWidth = 2
+                    ..strokeWidth = edgeWidth
                     ..style = PaintingStyle.stroke,
                 defaultNodePaint: Paint()
                     ..color = editColor.withOpacity(0.2)
@@ -117,7 +129,7 @@ class _SnowflakePainter extends CustomPainter {
             final paletteOne = Palette(
                 edgePaint: Paint()
                     ..color = theme.white
-                    ..strokeWidth = 2
+                    ..strokeWidth = edgeWidth
                     ..style = PaintingStyle.stroke,
                 defaultNodePaint: Paint()
                     ..color = theme.white
@@ -132,7 +144,7 @@ class _SnowflakePainter extends CustomPainter {
     @override
     bool shouldRepaint(covariant _SnowflakePainter oldDelegate) => true;
 
-    void _draw(Render render, Canvas canvas, Palette palette) {
+    void _draw(Render<NodeType> render, Canvas canvas, Palette palette) {
         for (final edge in render.edges.values.flatten()) {
             canvas.drawLine(
                 Offset(edge.first.x, edge.first.y),
@@ -141,10 +153,32 @@ class _SnowflakePainter extends CustomPainter {
             );
         }
 
-        for (final node in render.nodes.values.flatten()) {
-            canvas.drawCircle(Offset(node.x, node.y), 6, palette.defaultNodePaint);
+        double nodeWidth = _scaleNodeWidth(Snowflake().depth());
+
+        final nodes = render.nodes.entries.map((entry) => entry.value.map((coord) => Pair(entry.key, coord))).flatten();
+        for (final node in nodes) {
+            _drawNode(node.first.value, Offset(node.second.x, node.second.y), nodeWidth, canvas, palette);
         }
     }
+
+    void _drawNode(NodeType type, Offset loc, double nodeWidth, Canvas canvas, Palette palette) {
+        switch(type) {
+            case NodeType.circle: {
+                canvas.drawCircle(loc, nodeWidth / 2, palette.defaultNodePaint);
+            }
+            break;
+
+            case NodeType.square: {
+                canvas.drawRect(Rect.fromCenter(center: loc, width: nodeWidth, height: nodeWidth), palette.defaultNodePaint);
+            }
+            break;
+        }
+    }
+
+    // The numbers for these methods were picked by trial and error. If there's a better way to
+    //  determine these numbers, please do so.
+    double _scaleEdgeWidth(int depth) => math.min(5, 16 / depth);
+    double _scaleNodeWidth(int depth) => 28 / math.pow(depth, 0.63);
 }
 
 class Palette {

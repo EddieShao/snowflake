@@ -17,7 +17,7 @@ class BottomAppBar extends StatelessWidget {
                             icon: const Icon(Icons.add),
                             tooltip: "Add an arm",
                             onPressed: () {
-                                if (sf.add(0, 6, 1, 5, 0)) {
+                                if (sf.add(0, 6, 1, 5)) {
                                     editState.force();
                                 }
                             },

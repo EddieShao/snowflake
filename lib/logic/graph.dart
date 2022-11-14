@@ -6,18 +6,18 @@ import 'package:snowflake/utils.dart';
 /// constrained to a 60 degree angle (1/6) slice.
 class Graph<T> {
     final HashMap<Node<T>, List<Point?>> _nodes = HashMap();
-    final T _rootValue;
+    final T _defaultValue;
 
-    Graph(this._rootValue) {
+    Graph(this._defaultValue) {
         clear();
     }
 
     HashMap<Node<T>, List<Point?>> state() => HashMap.of(_nodes);
 
-    /// Return a list of edges and a list of nodes that can be added to this graph in the next operation.
-    Pair<List<Point>, List<Pair<Point, Point>>> next() {
-        // final free = <Pair<Pair<Point, Point>, Point?>>{};
-        final nodes = <Point>{};
+    /// Return a list of edges that can be added to this graph in the next operation. Also return
+    /// a list of nodes that could be created as a result of adding said edges.
+    Pair<List<Node<T>>, List<Pair<Point, Point>>> next() {
+        final nodes = <Node<T>>{};
         final edges = <Pair<Point, Point>>{};
 
         const xOffsets = [-1, 0, 1, -1, 0, 1];
@@ -29,11 +29,10 @@ class Graph<T> {
 
             for (int i = 0; i < 6; i++) {
                 if (availability[i] && entry.value[i] == null) {
-                    // free.add(Pair(from, Point(from.x + xOffsets[i], from.y + yOffsets[i])));
-                    final nextNode = Point(from.x + xOffsets[i], from.y + yOffsets[i]);
-                    edges.add(Pair(from, nextNode));
-                    if (_nodes.entries.find((e) => e.key.point == nextNode) == null) {
-                        nodes.add(nextNode);
+                    final nextPoint = Point(from.x + xOffsets[i], from.y + yOffsets[i]);
+                    edges.add(Pair(from, nextPoint));
+                    if (_nodes.entries.find((e) => e.key.point == nextPoint) == null) {
+                        nodes.add(Node(nextPoint, _defaultValue));
                     }
                 }
             }
@@ -88,13 +87,16 @@ class Graph<T> {
     /// 
     /// Return whether the update was successful or not.
     bool update(Point point, T newValue) {
-        final target = _nodes.keys.find((e) => e.point == point);
+        final entry = _nodes.entries.find((e) => e.key.point == point);
 
-        if (target == null) {
+        if (entry == null) {
             return false;
         }
 
-        target.value = newValue;
+        _nodes.remove(entry.key);
+        final newNode = Node(point, newValue);
+        _nodes[newNode] = entry.value;
+
         return true;
     }
 
@@ -135,7 +137,7 @@ class Graph<T> {
 
     void clear() {
         _nodes.clear();
-        _nodes[Node(const Point(0, 0), _rootValue)] = List<Point?>.filled(6, null);
+        _nodes[Node(const Point(0, 0), _defaultValue)] = List<Point?>.filled(6, null);
     }
 
     MapEntry<Node<T>, List<Point?>> _createNode(Point point, T value) {
@@ -193,6 +195,12 @@ class Node<T> {
     T value;
 
     Node(this.point, this.value);
+
+    @override
+    operator ==(covariant Node other) => point == other.point && value == other.value;
+
+    @override
+    int get hashCode => Object.hash(point, value);
 }
 
 extension<T> on MapEntry<Node<T>, List<Point?>> {
