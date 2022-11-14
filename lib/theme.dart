@@ -9,6 +9,8 @@ const blue = Color(0xFF09B1EC);
 const magenta = Color(0xFFB958A5);
 const pink = Color(0xFFFF5677);
 const orange = Color(0xFFFD841F);
+const brown = Color(0xFF9A3D0A);
+const yellow = Colors.yellow;
 
 ThemeData getTheme() {
     return ThemeData(
@@ -36,6 +38,17 @@ BoxDecoration getBackground() {
             colors: gradColors
         ),
     );
+}
+
+Color getEditEdgeColor() {
+    Color color = black;
+    _execByTime(
+        sunrise: () => color = brown,
+        day: () => color = brown,
+        sunset: () => color = yellow,
+        night: () => color = lightBlue,
+    );
+    return color;
 }
 
 void _execByTime({

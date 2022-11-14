@@ -40,7 +40,8 @@ class _SnowflakeWidgetState extends State<SnowflakeWidget> with SingleTickerProv
         final contextSize = MediaQuery.of(context).size;
         final canvasSize = Size.square(math.min(contextSize.width, contextSize.height) - 10);
 
-        Render current() => sf.renderAll(canvasSize);
+        Render all() => sf.renderAll(canvasSize);
+        Render one() => sf.renderOne(canvasSize);
         Render next() => sf.renderNext(canvasSize);
 
         final body = Center(
@@ -49,7 +50,7 @@ class _SnowflakeWidgetState extends State<SnowflakeWidget> with SingleTickerProv
                 child: Consumer<EditState>(
                     builder: (context, editState, child) {
                         return CustomPaint(
-                            painter: _SnowflakePainter(editState.value, current(), next()),
+                            painter: _SnowflakePainter(editState.value),
                             size: canvasSize,
                         );
                     },
@@ -83,69 +84,77 @@ class _SnowflakeWidgetState extends State<SnowflakeWidget> with SingleTickerProv
 
 class _SnowflakePainter extends CustomPainter {
     final bool editing;
-    final Render current;
-    final Render next;
 
-    _SnowflakePainter(this.editing, this.current, this.next);
+    const _SnowflakePainter(this.editing);
 
     @override
     void paint(Canvas canvas, Size size) {
-        _drawCurrent(current, canvas);
+        final sf = Snowflake();
+        final paletteAll = Palette(
+            edgePaint: Paint()
+                ..color = theme.white.withOpacity(editing ? 0.15 : 1)
+                ..strokeWidth = 2
+                ..style = PaintingStyle.stroke,
+            defaultNodePaint: Paint()
+                ..color = theme.white.withOpacity(editing ? 0.15 : 1)
+                ..strokeWidth = 0
+                ..style = PaintingStyle.fill,
+        );
+        _draw(sf.renderAll(size), canvas, paletteAll);
+
         if (editing) {
-            _drawNext(next, canvas);
+            final editColor = theme.getEditEdgeColor();
+            final paletteNext = Palette(
+                edgePaint: Paint()
+                    ..color = editColor.withOpacity(0.2)
+                    ..strokeWidth = 2
+                    ..style = PaintingStyle.stroke,
+                defaultNodePaint: Paint()
+                    ..color = editColor.withOpacity(0.2)
+                    ..strokeWidth = 0
+                    ..style = PaintingStyle.fill,
+            );
+            final paletteOne = Palette(
+                edgePaint: Paint()
+                    ..color = theme.white
+                    ..strokeWidth = 2
+                    ..style = PaintingStyle.stroke,
+                defaultNodePaint: Paint()
+                    ..color = theme.white
+                    ..strokeWidth = 0
+                    ..style = PaintingStyle.fill,
+            );
+            _draw(sf.renderNext(size), canvas, paletteNext);
+            _draw(sf.renderOne(size), canvas, paletteOne);
         }
     }
 
     @override
     bool shouldRepaint(covariant _SnowflakePainter oldDelegate) => true;
-    
-    void _drawCurrent(Render render, Canvas canvas) {
-        Paint edgePaint = Paint()
-            ..color = theme.white
-            ..strokeWidth = 2
-            ..style = PaintingStyle.stroke;
-        
-        Paint nodePaint = Paint()
-            ..color = theme.white
-            ..strokeWidth = 0
-            ..style = PaintingStyle.fill;
 
+    void _draw(Render render, Canvas canvas, Palette palette) {
         for (final edge in render.edges.values.flatten()) {
             canvas.drawLine(
                 Offset(edge.first.x, edge.first.y),
                 Offset(edge.second.x, edge.second.y),
-                edgePaint
+                palette.edgePaint
             );
         }
 
         for (final node in render.nodes.values.flatten()) {
-            canvas.drawCircle(Offset(node.x, node.y), 6, nodePaint);
+            canvas.drawCircle(Offset(node.x, node.y), 6, palette.defaultNodePaint);
         }
     }
+}
 
-    void _drawNext(Render render, Canvas canvas) {
-        final edgePaint = Paint()
-            ..color = theme.white.withOpacity(0.2)
-            ..strokeWidth = 2
-            ..style = PaintingStyle.stroke;
-        
-        Paint nodePaint = Paint()
-            ..color = theme.white.withOpacity(0.2)
-            ..strokeWidth = 0
-            ..style = PaintingStyle.fill;
+class Palette {
+    final Paint edgePaint;
+    final Paint defaultNodePaint;
 
-        for (final edge in render.edges.values.flatten()) {
-            canvas.drawLine(
-                Offset(edge.first.x, edge.first.y),
-                Offset(edge.second.x, edge.second.y),
-                edgePaint
-            );
-        }
-
-        for (final node in render.nodes.values.flatten()) {
-            canvas.drawCircle(Offset(node.x, node.y), 6, nodePaint);
-        }
-    }
+    const Palette({
+        required this.edgePaint,
+        required this.defaultNodePaint
+    });
 }
 
 extension<E> on Iterable<Iterable<E>> {

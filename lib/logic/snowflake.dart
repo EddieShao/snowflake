@@ -15,36 +15,12 @@ class Snowflake {
 
     final Graph<int> _arm = Graph(0);
 
-    /// Return geometry data of the current snowflake. The render fits inside a canvas with the
+    /// Return geometry data of the entire snowflake. The render fits inside a canvas with the
     /// given [size].
     Render renderAll(Size size) {
-        final armNodes = HashMap<Point, Coordinate>(); // nodes for 1 arm of the snowflake
-        final armEdges = HashMap<Edge<Point>, Edge<Coordinate>>(); // edges for 1 arm of the snowflake
-
-        // create blueprint for 1 arm of the snowflake
-        _arm.state().forEach((node, connections) {
-            // render this node; don't render the root
-            Coordinate from = _toScreen(node.point, size.width);
-            if (node.point.x != 0 || node.point.y != 0) {
-                armNodes[node.point] = from;
-            }
-
-            // children
-            var lchild = connections[0];
-            var cchild = connections[1];
-            var rchild = connections[2];
-
-            // render edge to each non-null child
-            if (lchild != null) {
-                armEdges[Pair(node.point, lchild)] = Pair(from, _toScreen(lchild, size.width));
-            }
-            if (cchild != null) {
-                armEdges[Pair(node.point, cchild)] = Pair(from, _toScreen(cchild, size.width));
-            }
-            if (rchild != null) {
-                armEdges[Pair(node.point, rchild)] = Pair(from, _toScreen(rchild, size.width));
-            }
-        });
+        final converted = _convertArm(size);
+        final armNodes = converted.first; // nodes for 1 arm of the snowflake
+        final armEdges = converted.second; // edges for 1 arm of the snowflake
 
         final nodes = HashMap<Point, List<Coordinate>>(); // nodes for full snowflake
         final edges = HashMap<Edge<Point>, List<Edge<Coordinate>>>(); // edges for full snowflake
@@ -65,6 +41,24 @@ class Snowflake {
                     )
                 );
             }
+        }
+
+        return Render(nodes, edges);
+    }
+
+    /// Return geometry data for 1 arm of this snowflake. The render fits inside a canvas with the
+    /// given [size].
+    Render renderOne(Size size) {
+        final converted = _convertArm(size);
+        final nodes = HashMap<Point, List<Coordinate>>();
+        final edges = HashMap<Edge<Point>, List<Edge<Coordinate>>>();
+
+        for (final entry in converted.first.entries) {
+            nodes[entry.key] = [entry.value.center(size)];
+        }
+
+        for (final entry in converted.second.entries) {
+            edges[entry.key] = [Pair(entry.value.first.center(size), entry.value.second.center(size))];
         }
 
         return Render(nodes, edges);
@@ -108,6 +102,38 @@ class Snowflake {
             hypotenuse * math.cos(offsetAngle),
             hypotenuse * math.sin(offsetAngle) + point.x * edgeLength
         ).rotate(3 * math.pi / 2 - offsetAngle);
+    }
+
+    Pair<HashMap<Point, Coordinate>, HashMap<Edge<Point>, Edge<Coordinate>>> _convertArm(Size size) {
+        final nodes = HashMap<Point, Coordinate>(); // nodes for 1 arm of the snowflake
+        final edges = HashMap<Edge<Point>, Edge<Coordinate>>(); // edges for 1 arm of the snowflake
+
+        // create blueprint for 1 arm of the snowflake
+        _arm.state().forEach((node, connections) {
+            // render this node; don't render the root
+            Coordinate from = _toScreen(node.point, size.width);
+            if (node.point.x != 0 || node.point.y != 0) {
+                nodes[node.point] = from;
+            }
+
+            // children
+            var lchild = connections[0];
+            var cchild = connections[1];
+            var rchild = connections[2];
+
+            // render edge to each non-null child
+            if (lchild != null) {
+                edges[Pair(node.point, lchild)] = Pair(from, _toScreen(lchild, size.width));
+            }
+            if (cchild != null) {
+                edges[Pair(node.point, cchild)] = Pair(from, _toScreen(cchild, size.width));
+            }
+            if (rchild != null) {
+                edges[Pair(node.point, rchild)] = Pair(from, _toScreen(rchild, size.width));
+            }
+        });
+
+        return Pair(nodes, edges);
     }
 }
 
