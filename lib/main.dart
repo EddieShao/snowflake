@@ -19,11 +19,13 @@ class MyApp extends StatelessWidget {
         return MaterialApp(
             title: 'Snowflake',
             theme: theme.getTheme(),
-            home: Scaffold(
-                body: LayoutBuilder(
-                    builder: (BuildContext context, BoxConstraints cons) {
-                        return const MainPage();
-                    },
+            home: SafeArea(
+                child: Scaffold(
+                    body: LayoutBuilder(
+                        builder: (BuildContext context, BoxConstraints cons) {
+                            return const MainPage();
+                        },
+                    ),
                 ),
             ),
         );
