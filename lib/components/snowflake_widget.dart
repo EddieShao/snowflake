@@ -104,15 +104,14 @@ class _SnowflakePainter extends CustomPainter {
         final edgeWidth = _scaleEdgeWidth(sf.depth());
         final paletteAll = Palette(
             edgePaint: Paint()
-                ..color = theme.white.withOpacity(editing ? 0.15 : 1)
+                ..color = theme.white
                 ..strokeWidth = edgeWidth
                 ..style = PaintingStyle.stroke,
             defaultNodePaint: Paint()
-                ..color = theme.white.withOpacity(editing ? 0.15 : 1)
+                ..color = theme.white
                 ..strokeWidth = 0
                 ..style = PaintingStyle.fill,
         );
-        _draw(sf.renderAll(size), canvas, paletteAll);
 
         if (editing) {
             final editColor = theme.getEditEdgeColor();
@@ -126,19 +125,10 @@ class _SnowflakePainter extends CustomPainter {
                     ..strokeWidth = 0
                     ..style = PaintingStyle.fill,
             );
-            final paletteOne = Palette(
-                edgePaint: Paint()
-                    ..color = theme.white
-                    ..strokeWidth = edgeWidth
-                    ..style = PaintingStyle.stroke,
-                defaultNodePaint: Paint()
-                    ..color = theme.white
-                    ..strokeWidth = 0
-                    ..style = PaintingStyle.fill,
-            );
             _draw(sf.renderNext(size), canvas, paletteNext);
-            _draw(sf.renderOne(size), canvas, paletteOne);
         }
+
+        _draw(sf.renderAll(size), canvas, paletteAll);
     }
 
     @override
