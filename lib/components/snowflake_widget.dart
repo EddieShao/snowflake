@@ -4,6 +4,7 @@ import 'package:snowflake/app_state.dart';
 import 'dart:math' as math;
 import 'package:snowflake/theme.dart' as theme;
 import 'package:snowflake/logic/snowflake.dart';
+import 'package:snowflake/logic/snowflake_touch.dart';
 import 'package:snowflake/utils.dart';
 
 class SnowflakeWidget extends StatefulWidget {
@@ -19,53 +20,30 @@ class _SnowflakeWidgetState extends State<SnowflakeWidget> with SingleTickerProv
     @override
     void initState() {
         super.initState();
-
-        // TODO: replace hard-coded stuff with DB access
-        final sf = Snowflake();
-        sf
-            ..clear()
-            ..add(0, 0, 0, 2)
-            ..add(0, 2, -1, 3)
-            ..add(-1, 3, -1, 5)
-            ..add(-1, 5, 0, 6)
-            ..add(0, 6, 1, 5)
-            ..add(0, 6, -1, 7)
-            ..add(0, 6, 1, 7)
-            ..add(0, 6, 0, 8)
-            ..add(0, 6, 0, 4);
-        
-        // for (int i = 4; i < 40; i++) {
-        //     sf.add(0, i * 2, 0, i * 2 + 2);
-        // }
-
-        sf.update(0, 2, NodeType.square);
-        sf.update(-1, 7, NodeType.square);
-        sf.update(0, 8, NodeType.square);
-        sf.update(1, 7, NodeType.square);
+        Snowflake()..clear()..add(0, 0, 0, 2);
     }
 
     @override
     Widget build(BuildContext context) {
-        final sf = Snowflake();
-
         final contextSize = MediaQuery.of(context).size;
         final canvasSize = Size.square(math.min(contextSize.width, contextSize.height) - 10);
 
-        Render<NodeType> all() => sf.renderAll(canvasSize);
-        Render<NodeType> one() => sf.renderOne(canvasSize);
-        Render<NodeType> next() => sf.renderNext(canvasSize);
-
         final body = Center(
-            child: GestureDetector(
-                // TODO: implement touch actions
-                child: Consumer<EditState>(
-                    builder: (context, editState, child) {
-                        return CustomPaint(
+            child: Consumer<EditState>(
+                builder: (context, editState, child) {
+                    return GestureDetector(
+                        onTapUp: (details) {
+                            if (editState.value) {
+                                onTapSnowflake(details.localPosition.dx, details.localPosition.dy, canvasSize);
+                                editState.force();
+                            }
+                        },
+                        child: CustomPaint(
                             painter: _SnowflakePainter(editState.value),
                             size: canvasSize,
-                        );
-                    },
-                ),
+                        ),
+                    );
+                },
             ),
         );
 

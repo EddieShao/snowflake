@@ -104,6 +104,10 @@ class Graph<T> {
     /// 
     /// Return whether the remove was successful or not.
     bool remove(Pair<Point, Point> edge) {
+        if (edge.first == const Point(0, 0) || edge.second == const Point(0, 0)) {
+            return false;
+        }
+
         final p1 = _nodes.entries.find((e) => e.key.point == edge.first);
         final p2 = _nodes.entries.find((e) => e.key.point == edge.second);
 
