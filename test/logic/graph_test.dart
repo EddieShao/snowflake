@@ -166,10 +166,18 @@ void main() {
                 expect(graph.remove(const Pair(Point(1, 3), Point(0, 2))), true);
                 expect(graph.remove(const Pair(Point(1, 3), Point(0, 2))), false);
             });
-            test("Should not remove non-leaf edge.", () {
+            test("Should not remove edge that leaves graph disconnected.", () {
                 graph.add(const Pair(Point(0, 0), Point(0, 2)), 1);
-                expect(graph.add(const Pair(Point(0, 2), Point(-1, 3)), 10), true);
-                expect(graph.remove(const Pair(Point(0, 0), Point(0, 2))), false);
+                graph.add(const Pair(Point(0, 2), Point(-1, 3)), 10);
+                graph.add(const Pair(Point(-1, 3), Point(-1, 5)), 5);
+                expect(graph.remove(const Pair(Point(0, 2), Point(-1, 3))), false);
+            });
+            test("Should remove edge that leaves graph connected.", () {
+                graph.add(const Pair(Point(0, 0), Point(0, 2)), 1);
+                graph.add(const Pair(Point(0, 2), Point(-1, 3)), 10);
+                graph.add(const Pair(Point(0, 2), Point(0, 4)), 5);
+                graph.add(const Pair(Point(0, 4), Point(-1, 3)), 0);
+                expect(graph.remove(const Pair(Point(0, 2), Point(0, 4))), true);
             });
         });
     });

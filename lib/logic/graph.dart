@@ -104,39 +104,85 @@ class Graph<T> {
     /// 
     /// Return whether the remove was successful or not.
     bool remove(Pair<Point, Point> edge) {
-        if (edge.first == const Point(0, 0) || edge.second == const Point(0, 0)) {
+        const root = Point(0, 0);
+        if (edge.first == root || edge.second == root) {
             return false;
         }
 
         final p1 = _nodes.entries.find((e) => e.key.point == edge.first);
         final p2 = _nodes.entries.find((e) => e.key.point == edge.second);
 
-        if (p1 == null || p2 == null || p1 == p2) {
+        if (p1 == null || p2 == null || p1 == p2 || !p1.value.contains(p2.key.point)) {
             return false;
         }
 
-        final MapEntry<Node<T>, List<Point?>> leaf;
-        final MapEntry<Node<T>, List<Point?>> branch;
+        final index1 = p2.value.indexOf(p1.key.point);
+        final index2 = p1.value.indexOf(p2.key.point);
+        p1.value[index2] = null;
+        p2.value[index1] = null;
 
-        if (p1.isLeafOf(p2) && p1.isNotRoot()) {
-            leaf = p1;
-            branch = p2;
-        } else if (p2.isLeafOf(p1) && p2.isNotRoot()) {
-            leaf = p2;
-            branch = p1;
+        if (p1.value.every((edge) => edge == null)) {
+            p2.value[index1] = null;
+            _nodes.remove(p1.key);
+            return true;
+        } else if (p2.value.every((edge) => edge == null)) {
+            p1.value[index2] = null;
+            _nodes.remove(p2.key);
+            return true;
         } else {
-            return false;
+            final connected = _isConnected(p1.key, p2.key.point);
+            _resetReferenced();
+            if (!connected) {
+                p1.value[index2] = p2.key.point;
+                p2.value[index1] = p1.key.point;
+            }
+            return connected;
         }
 
-        final leafIndex = branch.value.indexWhere((e) => e != null && e.x == leaf.key.point.x && e.y == leaf.key.point.y);
-        if (leafIndex == -1) {
-            return false;
+        // final MapEntry<Node<T>, List<Point?>> leaf;
+        // final MapEntry<Node<T>, List<Point?>> branch;
+
+        // if (p1.isLeafOf(p2)) {
+        //     leaf = p1;
+        //     branch = p2;
+        // } else if (p2.isLeafOf(p1)) {
+        //     leaf = p2;
+        //     branch = p1;
+        // } else {
+        //     return false;
+        // }
+
+        // final leafIndex = branch.value.indexWhere((e) => e != null && e.x == leaf.key.point.x && e.y == leaf.key.point.y);
+        // if (leafIndex == -1) {
+        //     return false;
+        // }
+
+        // branch.value[leafIndex] = null;
+        // _nodes.remove(leaf.key);
+
+        // return true;
+    }
+
+    bool _isConnected(Node<T> node, Point point) {
+        node.referenced = true;
+        if (node.point == point) {
+            return true;
+        } else {
+            final callbacks = <bool>[];
+            for (final otherPoint in _nodes[node] ?? <Point?>[]) {
+                final other = _nodes.keys.find((n) => n.point == otherPoint);
+                if (other != null && !other.referenced) {
+                    callbacks.add(_isConnected(other, point));
+                }
+            }
+            return callbacks.any((result) => result);
         }
+    }
 
-        branch.value[leafIndex] = null;
-        _nodes.remove(leaf.key);
-
-        return true;
+    void _resetReferenced() {
+        for (final node in _nodes.keys) {
+            node.referenced = false;
+        }
     }
 
     void clear() {
@@ -197,6 +243,7 @@ class Point {
 class Node<T> {
     final Point point;
     T value;
+    bool referenced = false; // for recursive algorithms
 
     Node(this.point, this.value);
 
