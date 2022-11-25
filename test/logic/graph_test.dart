@@ -150,28 +150,26 @@ void main() {
             test("Should not remove edge pointing to itself.", () {
                 expect(graph.remove(const Pair(Point(0, 0), Point(0, 0))), false);
             });
+            test("Should not remove child from root edge.", () {
+                graph.add(const Pair(Point(0, 0), Point(0, 2)), 3);
+                expect(graph.remove(const Pair(Point(0, 0), Point(0, 2))), false);
+            });
             test("Should remove leaf edge.", () {
                 graph.add(const Pair(Point(0, 0), Point(0, 2)), 3);
-                expect(graph.remove(const Pair(Point(0, 0), Point(0, 2))), true);
+                graph.add(const Pair(Point(0, 2), Point(0, 4)), 2);
+                expect(graph.remove(const Pair(Point(0, 2), Point(0, 4))), true);
                 expect(graph.remove(const Pair(Point(0, 0), Point(0, 2))), false);
             });
             test("Order of (x, y) inputs should not matter.", () {
                 graph.add(const Pair(Point(0, 0), Point(0, 2)), 5);
-                expect(graph.remove(const Pair(Point(0, 2), Point(0, 0))), true);
-                expect(graph.remove(const Pair(Point(0, 2), Point(0, 0))), false);
+                graph.add(const Pair(Point(0, 2), Point(1, 3)), 5);
+                expect(graph.remove(const Pair(Point(1, 3), Point(0, 2))), true);
+                expect(graph.remove(const Pair(Point(1, 3), Point(0, 2))), false);
             });
             test("Should not remove non-leaf edge.", () {
                 graph.add(const Pair(Point(0, 0), Point(0, 2)), 1);
                 expect(graph.add(const Pair(Point(0, 2), Point(-1, 3)), 10), true);
                 expect(graph.remove(const Pair(Point(0, 0), Point(0, 2))), false);
-            });
-            test("Should never remove root.", () {
-                graph.add(const Pair(Point(0, 0), Point(0, 2)), 40);
-                expect(graph.remove(const Pair(Point(0, 2), Point(0, 0))), true);
-                expect(graph.add(const Pair(Point(0, 2), Point(-1, 3)), 1), false);
-                graph.add(const Pair(Point(0, 0), Point(0, 2)), 20);
-                expect(graph.remove(const Pair(Point(0, 0), Point(0, 2))), true);
-                expect(graph.add(const Pair(Point(0, 2), Point(-1, 3)), 1), false);
             });
         });
     });

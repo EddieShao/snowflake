@@ -12,7 +12,7 @@ class Graph<T> {
         clear();
     }
 
-    HashMap<Node<T>, List<Point?>> state() => HashMap.of(_nodes);
+    Map<Node<T>, List<Point?>> state() => Map.unmodifiable(_nodes);
 
     /// Return a list of edges that can be added to this graph in the next operation. Also return
     /// a list of nodes that could be created as a result of adding said edges.
