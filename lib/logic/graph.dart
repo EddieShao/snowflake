@@ -138,29 +138,6 @@ class Graph<T> {
             }
             return connected;
         }
-
-        // final MapEntry<Node<T>, List<Point?>> leaf;
-        // final MapEntry<Node<T>, List<Point?>> branch;
-
-        // if (p1.isLeafOf(p2)) {
-        //     leaf = p1;
-        //     branch = p2;
-        // } else if (p2.isLeafOf(p1)) {
-        //     leaf = p2;
-        //     branch = p1;
-        // } else {
-        //     return false;
-        // }
-
-        // final leafIndex = branch.value.indexWhere((e) => e != null && e.x == leaf.key.point.x && e.y == leaf.key.point.y);
-        // if (leafIndex == -1) {
-        //     return false;
-        // }
-
-        // branch.value[leafIndex] = null;
-        // _nodes.remove(leaf.key);
-
-        // return true;
     }
 
     bool _isConnected(Node<T> node, Point point) {
